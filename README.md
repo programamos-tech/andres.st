@@ -1,36 +1,164 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# andres.st - Programamos Core
 
-## Getting Started
+Dashboard Maestro NOC para administrar proyectos de desarrollo de software a la medida.
 
-First, run the development server:
+## Descripción
+
+Centro de control que centraliza la visibilidad de todos los proyectos de clientes en un solo lugar:
+- **Monitoreo en tiempo real** de actividad de usuarios
+- **Detección proactiva de errores** antes de que los clientes reporten
+- **Análisis de uso** de módulos por proyecto
+- **Estado de servidores** con indicadores visuales
+
+## Stack Tecnológico
+
+- **Framework:** Next.js 16 (App Router)
+- **Base de Datos:** Supabase (PostgreSQL)
+- **Hosting:** Vercel
+- **Estilos:** Tailwind CSS v4
+- **Fuente:** Alegreya
+
+## Instalación
 
 ```bash
+# Clonar repositorio
+git clone https://github.com/programamos/andres.st.git
+cd andres.st
+
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno
+cp .env.local.example .env.local
+# Editar .env.local con tus credenciales de Supabase
+
+# Ejecutar en desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuración de Supabase
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Crear un proyecto en [Supabase](https://supabase.com)
+2. Ejecutar el schema SQL en `supabase/schema.sql`
+3. Copiar las credenciales a `.env.local`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+```
 
-## Learn More
+## Estructura del Proyecto
 
-To learn more about Next.js, take a look at the following resources:
+```
+andres.st/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx              # Landing page
+│   │   ├── core/
+│   │   │   └── page.tsx          # Dashboard principal
+│   │   └── api/
+│   │       └── v1/
+│   │           └── telemetry/
+│   │               └── route.ts  # API de ingesta
+│   ├── components/
+│   │   └── dashboard/            # Componentes del dashboard
+│   ├── lib/
+│   │   ├── supabase/            # Cliente de Supabase
+│   │   ├── hooks/               # React hooks
+│   │   └── telemetry-client/    # Scripts para clientes
+│   └── types/                   # TypeScript types
+├── supabase/
+│   └── schema.sql               # Schema de base de datos
+└── public/
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API de Telemetría
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Endpoint
 
-## Deploy on Vercel
+```
+POST /api/v1/telemetry
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Payload
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+{
+  "api_key": "tu_api_key_unica",
+  "usuario_nombre": "Juan Pérez",
+  "usuario_email": "juan@ejemplo.com",
+  "modulo_visitado": "Dashboard",
+  "accion_realizada": "Ver reportes",
+  "metadata": { "filtro": "mensual" },
+  "es_error": false,
+  "error_mensaje": null,
+  "duracion_ms": 1500
+}
+```
+
+### Respuesta
+
+```json
+{
+  "success": true,
+  "message": "Activity logged successfully",
+  "activity_id": "uuid",
+  "proyecto": "Nombre del proyecto"
+}
+```
+
+## Integración en Proyectos Cliente
+
+### Opción 1: Script JavaScript/TypeScript
+
+Copia `src/lib/telemetry-client/telemetry.ts` a tu proyecto:
+
+```typescript
+import { TelemetryClient } from './telemetry';
+
+const telemetry = new TelemetryClient({
+  apiKey: 'tu_api_key',
+  enabled: process.env.NODE_ENV === 'production'
+});
+
+telemetry.track({
+  usuario_nombre: 'Juan',
+  modulo_visitado: 'Ventas',
+  accion_realizada: 'Crear factura'
+});
+```
+
+### Opción 2: Trigger de Supabase
+
+Ver `src/lib/telemetry-client/supabase-trigger.sql`
+
+## Paleta de Colores
+
+- **Background:** `#f4f4ee`
+- **Texto:** `#323232`
+- **Acento:** `#8c52ff`
+- **Success:** `#22c55e`
+- **Error:** `#ef4444`
+
+## Scripts
+
+```bash
+npm run dev      # Desarrollo
+npm run build    # Build de producción
+npm run start    # Servidor de producción
+npm run lint     # Linter
+```
+
+## Roadmap
+
+- [ ] Autenticación de usuarios admin
+- [ ] Panel de gestión de proyectos
+- [ ] Sistema de tickets de soporte
+- [ ] Portal de clientes para comprar funcionalidades
+- [ ] Notificaciones push de errores
+- [ ] Dashboard de métricas avanzadas
+
+## Licencia
+
+Privado - © 2026 Programamos
