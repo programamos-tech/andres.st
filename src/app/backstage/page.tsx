@@ -43,12 +43,12 @@ const MOCK_TICKETS: TicketPreview[] = [
 ];
 
 const ESTADO_COLORS: Record<TicketEstado, string> = {
-  creado: 'bg-slate-500',
-  replicando: 'bg-amber-500',
-  ajustando: 'bg-blue-500',
-  probando: 'bg-purple-500',
-  desplegando: 'bg-cyan-500',
-  resuelto: 'bg-emerald-500'
+  creado: 'bg-[var(--text-muted)]',
+  replicando: 'bg-[var(--status-warn)]',
+  ajustando: 'bg-[var(--accent)]',
+  probando: 'bg-[var(--status-ok)]',
+  desplegando: 'bg-[var(--accent)]',
+  resuelto: 'bg-[var(--status-ok)]'
 };
 
 // Iconos

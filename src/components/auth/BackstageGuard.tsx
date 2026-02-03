@@ -9,56 +9,52 @@ interface BackstageGuardProps {
 
 export function BackstageGuard({ children }: BackstageGuardProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const auth = localStorage.getItem('backstage_auth');
-      
-      if (!auth) {
-        setIsAuthenticated(false);
-        router.push('/backstage/login');
-        return;
-      }
+    setMounted(true);
+  }, []);
 
-      try {
-        const authData = JSON.parse(auth);
-        
-        // Verificar que la sesión no tenga más de 24 horas
-        const maxAge = 24 * 60 * 60 * 1000; // 24 horas
-        if (Date.now() - authData.timestamp > maxAge) {
-          localStorage.removeItem('backstage_auth');
-          setIsAuthenticated(false);
-          router.push('/backstage/login');
-          return;
-        }
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
 
-        if (authData.authenticated) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-          router.push('/backstage/login');
-        }
-      } catch {
+    const auth = localStorage.getItem('backstage_auth');
+
+    if (!auth) {
+      setIsAuthenticated(false);
+      router.replace('/backstage/login');
+      return;
+    }
+
+    try {
+      const authData = JSON.parse(auth);
+      const maxAge = 24 * 60 * 60 * 1000;
+      if (Date.now() - authData.timestamp > maxAge) {
         localStorage.removeItem('backstage_auth');
         setIsAuthenticated(false);
-        router.push('/backstage/login');
+        router.replace('/backstage/login');
+        return;
       }
-    };
+      setIsAuthenticated(authData.authenticated === true);
+      if (authData.authenticated !== true) {
+        router.replace('/backstage/login');
+      }
+    } catch {
+      localStorage.removeItem('backstage_auth');
+      setIsAuthenticated(false);
+      router.replace('/backstage/login');
+    }
+  }, [mounted, router]);
 
-    checkAuth();
-  }, [router]);
-
-  // Mostrar loading mientras verifica
-  if (isAuthenticated === null) {
+  if (!mounted || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
-        <div className="text-[var(--text-muted)]">Verificando acceso...</div>
+        <div className="text-[var(--text-muted)] text-sm">Verificando acceso...</div>
       </div>
     );
   }
 
-  // Si no está autenticado, no mostrar nada (ya redirigió)
   if (!isAuthenticated) {
     return null;
   }

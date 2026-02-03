@@ -72,7 +72,7 @@ export default function ActividadesPage() {
                 onClick={() => setFiltro('errores')}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                   filtro === 'errores' 
-                    ? 'bg-red-500 text-white' 
+                    ? 'bg-[var(--status-error)] text-white' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text)]'
                 }`}
               >
@@ -88,15 +88,15 @@ export default function ActividadesPage() {
                 key={act.id}
                 className={`p-4 rounded-xl bg-[var(--bg)] border transition-colors ${
                   act.es_error 
-                    ? 'border-red-500/20' 
+                    ? 'border-[var(--status-error)]/30' 
                     : 'border-[var(--border)]'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className={`w-2 h-2 rounded-full mt-2 ${act.es_error ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full mt-2 ${act.es_error ? 'bg-[var(--status-error)]' : 'bg-[var(--status-ok)]'}`}></div>
                     <div>
-                      <p className={`text-sm font-medium ${act.es_error ? 'text-red-500' : 'text-[var(--text)]'}`}>
+                      <p className={`text-sm font-medium ${act.es_error ? '' : 'text-[var(--text)]'}`} style={act.es_error ? { color: 'var(--status-error)' } : undefined}>
                         {act.accion}
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-[var(--text-muted)]">

@@ -129,7 +129,7 @@ export default function ProyectoDetallePage() {
     );
   }
 
-  const statusColor = proyecto.errores_ultima_hora > 0 ? 'bg-red-500' : 'bg-emerald-500';
+  const statusColor = proyecto.errores_ultima_hora > 0 ? 'bg-[var(--status-error)]' : 'bg-[var(--status-ok)]';
 
   return (
     <BackstageGuard>
@@ -184,7 +184,7 @@ export default function ProyectoDetallePage() {
               <p className="text-sm text-[var(--text-muted)]">Usuarios activos</p>
             </div>
             <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-              <p className={`text-2xl font-bold ${proyecto.errores_ultima_hora > 0 ? 'text-red-500' : 'text-[var(--text)]'}`}>
+              <p className={`text-2xl font-bold ${proyecto.errores_ultima_hora > 0 ? '' : 'text-[var(--text)]'}`} style={proyecto.errores_ultima_hora > 0 ? { color: 'var(--status-error)' } : undefined}>
                 {proyecto.errores_ultima_hora}
               </p>
               <p className="text-sm text-[var(--text-muted)]">Errores (1h)</p>
@@ -201,8 +201,8 @@ export default function ProyectoDetallePage() {
 
           {/* Error activo */}
           {proyecto.ultimo_error && (
-            <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 mb-8">
-              <p className="text-sm font-medium text-red-500 mb-1">Último error</p>
+            <div className="p-4 rounded-xl border mb-8 bg-[var(--status-error)]/10" style={{ borderColor: 'var(--status-error)' }}>
+              <p className="text-sm font-medium mb-1" style={{ color: 'var(--status-error)' }}>Último error</p>
               <p className="text-sm text-[var(--text)]">{proyecto.ultimo_error.error_mensaje}</p>
               <p className="text-xs text-[var(--text-muted)] mt-2">
                 {formatDistanceToNow(new Date(proyecto.ultimo_error.timestamp), { addSuffix: true, locale: es })}
@@ -236,11 +236,12 @@ export default function ProyectoDetallePage() {
                 {proyecto.actividades_recientes.map((act) => (
                   <div 
                     key={act.id} 
-                    className={`p-3 rounded-lg border ${act.es_error ? 'border-red-500/20 bg-red-500/5' : 'border-[var(--border)]'}`}
+                    className={`p-3 rounded-lg border ${act.es_error ? 'bg-[var(--status-error)]/10' : 'border-[var(--border)]'}`}
+                    style={act.es_error ? { borderColor: 'var(--status-error)' } : undefined}
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className={`text-sm ${act.es_error ? 'text-red-500' : 'text-[var(--text)]'}`}>
+                        <p className={`text-sm ${act.es_error ? '' : 'text-[var(--text)]'}`} style={act.es_error ? { color: 'var(--status-error)' } : undefined}>
                           {act.accion_realizada}
                         </p>
                         <p className="text-xs text-[var(--text-muted)] mt-1">

@@ -68,22 +68,22 @@ export function ActivityFeed() {
       <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
         <span className="font-medium text-sm">Actividad</span>
         <span className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--status-ok)' }}></span>
           live
         </span>
       </div>
       <div className="max-h-[400px] overflow-y-auto">
         {actividades.map((a) => (
-          <div key={a.id} className={`px-4 py-3 border-b border-[var(--border)] last:border-0 ${a.es_error ? 'bg-red-500/5' : ''}`}>
+          <div key={a.id} className={`px-4 py-3 border-b border-[var(--border)] last:border-0 ${a.es_error ? 'bg-[var(--status-error)]/10' : ''}`}>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-sm font-medium">{a.usuario_nombre}</span>
-              {a.es_error && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-500">error</span>}
+              {a.es_error && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--status-error)', color: 'white', opacity: 0.9 }}>error</span>}
             </div>
             <p className="text-sm text-[var(--text-muted)]">
               {a.accion_realizada} en {a.modulo_visitado}
             </p>
             {a.es_error && a.error_mensaje && (
-              <p className="text-xs text-red-500 mt-1 truncate">{a.error_mensaje}</p>
+              <p className="text-xs mt-1 truncate" style={{ color: 'var(--status-error)' }}>{a.error_mensaje}</p>
             )}
             <p className="text-xs text-[var(--text-muted)] mt-1">
               {a.proyectos_maestros?.nombre_proyecto} · {formatDistanceToNow(new Date(a.timestamp), { addSuffix: true, locale: es })}

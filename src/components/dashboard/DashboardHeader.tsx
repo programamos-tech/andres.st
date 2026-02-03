@@ -77,7 +77,7 @@ export function DashboardHeader({
                   href={item.href}
                   className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                     isActive 
-                      ? 'bg-[var(--bg-secondary)] text-[var(--text)]' 
+                      ? 'bg-[var(--accent)] text-white' 
                       : 'text-[var(--text-muted)] hover:text-[var(--text)]'
                   }`}
                 >
@@ -93,9 +93,9 @@ export function DashboardHeader({
           {/* Stats */}
           <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-muted)]">
             <span>{totalProyectos} proyectos</span>
-            <span className="text-emerald-500">{proyectosActivos} activos</span>
+            <span style={{ color: 'var(--status-ok)' }}>{proyectosActivos} activos</span>
             {proyectosConErrores > 0 && (
-              <span className="text-red-500">{proyectosConErrores} errores</span>
+              <span style={{ color: 'var(--status-error)' }}>{proyectosConErrores} errores</span>
             )}
           </div>
 

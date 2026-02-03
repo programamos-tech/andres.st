@@ -79,9 +79,9 @@ const ESTADOS: { id: TicketEstado; label: string }[] = [
 ];
 
 const PRIORIDAD_COLORS: Record<string, string> = {
-  super_alta: 'text-red-500',
-  alta: 'text-amber-500',
-  media: 'text-blue-500',
+  super_alta: 'text-[var(--status-error)]',
+  alta: 'text-[var(--status-warn)]',
+  media: 'text-[var(--accent)]',
   baja: 'text-[var(--text-muted)]'
 };
 

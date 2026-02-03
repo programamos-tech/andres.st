@@ -21,9 +21,9 @@ export function ProyectoCard({ proyecto }: ProyectoCardProps) {
     : 'Sin actividad';
 
   const statusColor = {
-    active: 'bg-emerald-500',
+    active: 'bg-[var(--status-ok)]',
     inactive: 'bg-[var(--text-muted)]',
-    error: 'bg-red-500'
+    error: 'bg-[var(--status-error)]'
   };
 
   return (
@@ -47,7 +47,7 @@ export function ProyectoCard({ proyecto }: ProyectoCardProps) {
         
         <div className="flex items-center gap-4">
           {proyecto.errores_ultima_hora > 0 && (
-            <span className="text-xs text-red-500 font-medium">
+            <span className="text-xs font-medium" style={{ color: 'var(--status-error)' }}>
               {proyecto.errores_ultima_hora} error{proyecto.errores_ultima_hora > 1 ? 'es' : ''}
             </span>
           )}

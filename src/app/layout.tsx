@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Andrés Russ | Software Developer",
-  description: "Construyo la plataforma que tu marca necesita para seguir creciendo",
+  title: "andres.backstage | Software a la medida",
+  description: "Construyo la plataforma que tu marca necesita. Software a la medida, programado desde cero.",
 };
 
 export default function RootLayout({

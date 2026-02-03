@@ -1,27 +1,76 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:wght@800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
+/* Paleta marca: terracota | café | carbón | crema | marrón */
+
 :root {
-  --bg: #ffffff;
-  --bg-secondary: #f9fafb;
-  --text: #111111;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
+  --bg: #f5f0eb;
+  --bg-secondary: #dcd5cd;
+  --text: #2c2b2c;
+  --text-muted: #5f4e43;
+  --border: #a06f5940;
+  --accent: #d5957a;
+  --accent-hover: #c0846a;
+  --status-ok: #a06f59;
+  --status-error: #b85450;
+  --status-warn: #b87d4a;
+  /* Nombres de marca para usar en toda la UI */
+  --brand-terracota: #d5957a;
+  --brand-cafe: #a06f59;
+  --brand-carbon: #2c2b2c;
+  --brand-crema: #dcd5cd;
+  --brand-marron: #5f4e43;
+  --shadow-soft: 0 4px 24px rgba(44, 43, 44, 0.06);
+  --shadow-mid: 0 12px 40px rgba(44, 43, 44, 0.08);
+  --shadow-glow: 0 0 60px rgba(213, 149, 122, 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a0a0a;
-    --bg-secondary: #111111;
-    --text: #fafafa;
-    --text-muted: #9ca3af;
-    --border: #262626;
+    --bg: #2c2b2c;
+    --bg-secondary: #3d3a3b;
+    --text: #dcd5cd;
+    --text-muted: #a06f59;
+    --border: #5f4e4350;
+    --accent: #d5957a;
+    --accent-hover: #e0a58a;
+    --status-ok: #c49a7a;
+    --status-error: #d96a66;
+    --status-warn: #d99d6a;
+    --brand-terracota: #d5957a;
+    --brand-cafe: #c49a7a;
+    --brand-carbon: #dcd5cd;
+    --brand-crema: #3d3a3b;
+    --brand-marron: #a06f59;
+    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.2);
+    --shadow-mid: 0 12px 40px rgba(0, 0, 0, 0.25);
+    --shadow-glow: 0 0 60px rgba(213, 149, 122, 0.12);
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 * {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.hero-heading {
+  font-family: 'Alegreya', Georgia, serif;
+  font-weight: 900;
+}
+
+/* Sección marca a toda vista: sin margen ni padding vertical */
+.marca-fullview {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.marca-fullview > p {
+  margin: 0 !important;
 }
 
 body {
@@ -52,12 +101,68 @@ body {
 }
 
 .btn-primary {
-  background: var(--text);
-  color: var(--bg);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-primary:hover {
-  opacity: 0.85;
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-mid), var(--shadow-glow);
+}
+
+/* Premium section card */
+.section-card {
+  background: var(--bg);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  .section-card {
+    background: var(--bg-secondary);
+  }
+}
+
+/* Hero gradient overlay */
+.hero-glow {
+  background: radial-gradient(ellipse 80% 50% at 70% 50%, rgba(213, 149, 122, 0.12) 0%, transparent 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hero-glow {
+    background: radial-gradient(ellipse 80% 50% at 70% 50%, rgba(213, 149, 122, 0.08) 0%, transparent 60%);
+  }
+}
+
+/* Marquee de logos — loop continuo sin salto visible */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.logos-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 240s linear infinite;
+  will-change: transform;
+}
+
+.logos-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.logo-marca {
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+
+.logo-marca:hover {
+  filter: grayscale(0%);
+  opacity: 1;
 }
 
 .btn-outline {
@@ -68,6 +173,20 @@ body {
 
 .btn-outline:hover {
   border-color: var(--text);
+}
+
+/* Botón secundario con café de marca */
+.btn-secondary {
+  background: var(--brand-cafe);
+  color: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-secondary:hover {
+  background: var(--status-ok);
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-mid);
 }
 
 /* Scrollbar */

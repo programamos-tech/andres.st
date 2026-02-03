@@ -95,13 +95,13 @@ export default function BackstageLogin() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <p className="text-sm" style={{ color: 'var(--status-error)' }}>{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-3 bg-[var(--text)] text-[var(--bg)] rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full px-4 py-3 bg-[var(--accent)] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
