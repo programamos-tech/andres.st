@@ -1,85 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 
-interface ProyectoDetalle {
+interface ProjectForBackstage {
   id: string;
-  nombre_proyecto: string;
   nombre_cliente: string;
+  nombre_proyecto: string;
   url_dominio: string;
+  logo_url: string | null;
+  main_store_external_id: string | null;
   status_servidor: string;
-  last_activity_at: string;
-  actividad_ultima_hora: number;
-  usuarios_activos: number;
-  errores_ultima_hora: number;
-  top_modulos: { modulo: string; count: number }[];
-  ultimo_error: { error_mensaje: string; timestamp: string } | null;
-  actividades_recientes: {
-    id: string;
-    usuario_nombre: string;
-    modulo_visitado: string;
-    accion_realizada: string;
-    es_error: boolean;
-    timestamp: string;
-  }[];
+  last_activity_at: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  client_api_url: string | null;
+  client_api_configured: boolean;
 }
 
-// Mock data
-const MOCK_PROYECTOS: Record<string, ProyectoDetalle> = {
-  '1': {
-    id: '1',
-    nombre_proyecto: 'Sistema POS ZonaT',
-    nombre_cliente: 'ZonaT',
-    url_dominio: 'https://zonat.vercel.app',
-    status_servidor: 'online',
-    last_activity_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-    actividad_ultima_hora: 47,
-    usuarios_activos: 5,
-    errores_ultima_hora: 0,
-    top_modulos: [
-      { modulo: 'Ventas', count: 28 },
-      { modulo: 'Inventario', count: 12 },
-      { modulo: 'Reportes', count: 7 }
-    ],
-    ultimo_error: null,
-    actividades_recientes: [
-      { id: '1', usuario_nombre: 'María García', modulo_visitado: 'Ventas', accion_realizada: 'Nueva venta #245', es_error: false, timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString() },
-      { id: '2', usuario_nombre: 'Carlos López', modulo_visitado: 'Inventario', accion_realizada: 'Ajuste de stock', es_error: false, timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString() },
-      { id: '3', usuario_nombre: 'María García', modulo_visitado: 'Ventas', accion_realizada: 'Nueva venta #244', es_error: false, timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-      { id: '4', usuario_nombre: 'Ana Pérez', modulo_visitado: 'Clientes', accion_realizada: 'Cliente registrado', es_error: false, timestamp: new Date(Date.now() - 22 * 60 * 1000).toISOString() }
-    ]
-  },
-  '2': {
-    id: '2',
-    nombre_proyecto: 'ERP Aleya',
-    nombre_cliente: 'Aleya',
-    url_dominio: 'https://aleya.vercel.app',
-    status_servidor: 'online',
-    last_activity_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-    actividad_ultima_hora: 89,
-    usuarios_activos: 12,
-    errores_ultima_hora: 2,
-    top_modulos: [
-      { modulo: 'Facturación', count: 45 },
-      { modulo: 'Contabilidad', count: 28 },
-      { modulo: 'Nómina', count: 16 }
-    ],
-    ultimo_error: { error_mensaje: 'Error al generar reporte PDF - timeout', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-    actividades_recientes: [
-      { id: '1', usuario_nombre: 'Pedro Ruiz', modulo_visitado: 'Facturación', accion_realizada: 'Factura #1024 generada', es_error: false, timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
-      { id: '2', usuario_nombre: 'Laura Sánchez', modulo_visitado: 'Reportes', accion_realizada: 'Error al generar PDF', es_error: true, timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-      { id: '3', usuario_nombre: 'Pedro Ruiz', modulo_visitado: 'Contabilidad', accion_realizada: 'Asiento contable', es_error: false, timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString() }
-    ]
-  }
-};
-
-// Iconos
 const IconBack = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -92,171 +36,618 @@ const IconExternal = () => (
   </svg>
 );
 
+const IconRefresh = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+);
+
+const IconSpinner = () => (
+  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  </svg>
+);
+
+function activityLabel(action: string, module: string, details: Record<string, unknown>): string {
+  const desc = details?.description;
+  if (typeof desc === 'string' && desc.trim()) return desc;
+  const actionLower = action.toLowerCase();
+  const moduleLower = module.toLowerCase();
+  if (actionLower === 'login' && (moduleLower === 'auth' || moduleLower === 'login')) return 'Inició sesión';
+  if (actionLower === 'sale_create' || actionLower === 'sale_create_draft') return 'Registró una venta';
+  if (actionLower === 'sale_cancel') return 'Anuló una venta';
+  if (actionLower === 'sale_finalize') return 'Finalizó una venta (borrador)';
+  if (actionLower === 'product_create') return 'Creó un producto';
+  if (actionLower === 'product_edit') return 'Editó un producto';
+  if (actionLower === 'product_delete') return 'Eliminó un producto';
+  if (actionLower === 'client_create') return 'Creó un cliente';
+  if (actionLower === 'client_edit') return 'Editó un cliente';
+  if (actionLower === 'client_delete') return 'Eliminó un cliente';
+  if (actionLower.includes('transfer')) return 'Realizó una transferencia de stock';
+  if (actionLower.includes('category')) return moduleLower.includes('create') ? 'Creó una categoría' : moduleLower.includes('edit') ? 'Editó una categoría' : 'Eliminó una categoría';
+  if (actionLower.includes('payment') || actionLower.includes('pago')) return 'Registró un pago';
+  if (actionLower.includes('credit') || actionLower.includes('credito')) return 'Trabajó con un crédito';
+  if (actionLower.includes('warranty') || actionLower.includes('garantia')) return 'Registró una garantía';
+  return `${action} · ${module}`;
+}
+
 export default function ProyectoDetallePage() {
   const params = useParams();
   const proyectoId = params.id as string;
-  const [proyecto, setProyecto] = useState<ProyectoDetalle | null>(null);
+  const [project, setProject] = useState<ProjectForBackstage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [clientApiUrl, setClientApiUrl] = useState('');
+  const [clientApiKey, setClientApiKey] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [syncMessage, setSyncMessage] = useState('');
+
+  const [stores, setStores] = useState<{ id: string; external_id: string; name: string | null; logo_url: string | null }[]>([]);
+  const [users, setUsers] = useState<{ id: string; email: string; name: string | null; store_id: string | null; store_name: string | null; is_owner: boolean }[]>([]);
+  const [storesLoading, setStoresLoading] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [activities, setActivities] = useState<{ id: string; user_id: string | null; user_name: string | null; action: string; module: string; details: Record<string, unknown>; store_id: string | null; created_at: string }[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
+  type ClientTab = 'proyectos' | 'sync' | 'facturas' | 'soporte';
+  const [clientTab, setClientTab] = useState<ClientTab>('proyectos');
+  const [liveHealth, setLiveHealth] = useState<{ status: 'active' | 'inactive'; latency_ms?: number | null } | null>(null);
+  const [liveHealthLoading, setLiveHealthLoading] = useState(false);
+  const [healthHistory, setHealthHistory] = useState<{ id: string; checked_at: string; status: string; latency_ms: number | null }[]>([]);
+
+  const fetchProject = useCallback(async () => {
+    if (!proyectoId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/backstage/projects/${proyectoId}`);
+      if (!res.ok) {
+        if (res.status === 404) setError('Project not found');
+        else setError('Failed to load project');
+        setProject(null);
+        return;
+      }
+      const data: ProjectForBackstage = await res.json();
+      setProject(data);
+      setClientApiUrl(data.client_api_url ?? '');
+    } catch {
+      setError('Failed to load project');
+      setProject(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [proyectoId]);
 
   useEffect(() => {
-    // Simular carga (en producción vendría de Supabase)
-    setTimeout(() => {
-      setProyecto(MOCK_PROYECTOS[proyectoId] || MOCK_PROYECTOS['1']);
-      setLoading(false);
-    }, 300);
+    fetchProject();
+  }, [fetchProject]);
+
+  useEffect(() => {
+    if (!proyectoId) return;
+    setStoresLoading(true);
+    setUsersLoading(true);
+    Promise.all([
+      fetch(`/api/backstage/projects/${proyectoId}/stores`).then((r) => r.json()).then((d) => (Array.isArray(d) ? d : [])).catch(() => []),
+      fetch(`/api/backstage/projects/${proyectoId}/users`).then((r) => r.json()).then((d) => (Array.isArray(d) ? d : [])).catch(() => []),
+    ]).then(([storesData, usersData]) => {
+      setStores(storesData);
+      setUsers(usersData);
+    }).finally(() => {
+      setStoresLoading(false);
+      setUsersLoading(false);
+    });
   }, [proyectoId]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId) {
+      setActivities([]);
+      return;
+    }
+    setActivitiesLoading(true);
+    fetch(`/api/backstage/projects/${proyectoId}/activities?store_id=${encodeURIComponent(selectedStoreId)}&limit=80`)
+      .then((r) => r.json())
+      .then((d) => (Array.isArray(d) ? d : []))
+      .then(setActivities)
+      .catch(() => setActivities([]))
+      .finally(() => setActivitiesLoading(false));
+  }, [proyectoId, selectedStoreId]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId || !project?.client_api_url) {
+      setLiveHealth(null);
+      return;
+    }
+    setLiveHealthLoading(true);
+    setLiveHealth(null);
+    fetch(`/api/backstage/projects/${proyectoId}/health`)
+      .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
+      .then(({ ok, d }) => {
+        if (ok && (d.status === 'active' || d.status === 'inactive')) {
+          setLiveHealth({ status: d.status, latency_ms: d.latency_ms ?? null });
+        } else {
+          setLiveHealth({ status: 'inactive', latency_ms: null });
+        }
+      })
+      .catch(() => setLiveHealth({ status: 'inactive', latency_ms: null }))
+      .finally(() => setLiveHealthLoading(false));
+  }, [proyectoId, selectedStoreId, project?.client_api_url]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId) {
+      setHealthHistory([]);
+      return;
+    }
+    fetch(`/api/backstage/projects/${proyectoId}/health/history?limit=15`)
+      .then((r) => r.json())
+      .then((d) => (Array.isArray(d) ? d : []))
+      .then(setHealthHistory)
+      .catch(() => setHealthHistory([]));
+  }, [proyectoId, selectedStoreId, liveHealth]);
+
+  const handleSaveConfig = async () => {
+    if (!proyectoId) return;
+    setSaveStatus('saving');
+    try {
+      const res = await fetch(`/api/backstage/projects/${proyectoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_api_url: clientApiUrl.trim() || null,
+          client_api_key: clientApiKey || '',
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Failed to save');
+      }
+      setSaveStatus('saved');
+      setClientApiKey('');
+      await fetchProject();
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (e) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!proyectoId) return;
+    setSyncStatus('syncing');
+    setSyncMessage('');
+    const body: { project_id: string; client_api_url?: string; client_api_key?: string } = { project_id: proyectoId };
+    if (clientApiUrl.trim()) body.client_api_url = clientApiUrl.trim();
+    if (clientApiKey) body.client_api_key = clientApiKey;
+    try {
+      const res = await fetch('/api/store/sync-client-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSyncMessage(data.error ?? 'Sync failed');
+        setSyncStatus('error');
+        return;
+      }
+      setSyncMessage(`Synced ${data.users_synced ?? 0} users, ${data.stores_synced ?? 0} stores. Owner ${data.owner_set ? 'set' : 'not set'}.`);
+      setSyncStatus('success');
+      fetchProject();
+      const [sRes, uRes] = await Promise.all([
+        fetch(`/api/backstage/projects/${proyectoId}/stores`),
+        fetch(`/api/backstage/projects/${proyectoId}/users`),
+      ]);
+      const sData = await sRes.json().catch(() => []);
+      const uData = await uRes.json().catch(() => []);
+      setStores(Array.isArray(sData) ? sData : []);
+      setUsers(Array.isArray(uData) ? uData : []);
+    } catch {
+      setSyncMessage('Sync failed');
+      setSyncStatus('error');
+    }
+  };
 
   if (loading) {
     return (
       <BackstageGuard>
         <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
-          <div className="text-[var(--text-muted)]">Cargando...</div>
+          <div className="text-[var(--text-muted)]">Loading...</div>
         </div>
       </BackstageGuard>
     );
   }
 
-  if (!proyecto) {
+  if (error || !project) {
     return (
       <BackstageGuard>
         <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg)]">
-          <h1 className="text-xl font-semibold text-[var(--text)] mb-2">Proyecto no encontrado</h1>
+          <h1 className="text-xl font-semibold text-[var(--text)] mb-2">{error ?? 'Project not found'}</h1>
           <Link href="/backstage" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)]">
-            Volver al Backstage
+            Back to Backstage
           </Link>
         </div>
       </BackstageGuard>
     );
   }
 
-  const statusColor = proyecto.errores_ultima_hora > 0 ? 'bg-[var(--status-error)]' : 'bg-[var(--status-ok)]';
+  const statusColor = project.status_servidor === 'active' ? 'bg-[var(--status-ok)]' : 'bg-[var(--text-muted)]';
+  const baseUrl = (project.client_api_url || project.url_dominio || '').replace(/\/$/, '');
+  const resolveLogoUrl = (raw: string | null | undefined): string | null => {
+    if (!raw || typeof raw !== 'string') return null;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    if (!baseUrl) return raw;
+    return `${baseUrl}${raw.startsWith('/') ? '' : '/'}${raw}`;
+  };
+  const mainStoreExternalId = project.main_store_external_id?.trim() || null;
+  const mainStore =
+    (mainStoreExternalId ? stores.find((s) => s.external_id === mainStoreExternalId) : null) ??
+    (() => {
+      const owner = users.find((u) => u.is_owner);
+      return owner?.store_id ? stores.find((s) => s.external_id === owner.store_id) : null;
+    })() ??
+    stores[0] ??
+    null;
+  const rawHeaderLogo = (mainStore?.logo_url ?? project.logo_url) || null;
+  const headerLogoUrl = rawHeaderLogo ? resolveLogoUrl(rawHeaderLogo) : null;
 
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
-        {/* Nav */}
-        <nav className="px-6 py-4 border-b border-[var(--border)]">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/backstage" className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-                <IconBack />
-              </Link>
-              <span className="font-semibold text-[var(--text)]">{BRAND.username}</span>
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Backstage / Proyecto</span>
-          </div>
-        </nav>
+        <DashboardHeader showStats={false} onRefresh={fetchProject} />
 
-        <main className="max-w-5xl mx-auto px-6 py-8">
-          {/* Header del proyecto */}
+        <main className="w-full max-w-[1920px] mx-auto px-6 py-8">
+          {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-xl font-semibold">
-                {proyecto.nombre_proyecto.charAt(0)}
-              </div>
+              {headerLogoUrl ? (
+                <img src={headerLogoUrl} alt={project.nombre_proyecto} className="w-14 h-14 rounded-full object-cover object-center bg-[var(--bg-secondary)] border border-[var(--border)]" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-xl font-semibold">
+                  {project.nombre_proyecto.charAt(0)}
+                </div>
+              )}
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-[var(--text)]">{proyecto.nombre_proyecto}</h1>
+                  <h1 className="text-2xl font-bold text-[var(--text)]">{project.nombre_proyecto}</h1>
                   <span className={`w-3 h-3 rounded-full ${statusColor}`}></span>
                 </div>
-                <p className="text-[var(--text-muted)]">{proyecto.nombre_cliente}</p>
+                <p className="text-[var(--text-muted)]">{project.nombre_cliente}</p>
               </div>
             </div>
-            <a 
-              href={proyecto.url_dominio} 
-              target="_blank" 
+            <a
+              href={project.url_dominio}
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--text-muted)] transition-colors"
             >
-              <span>Visitar</span>
+              <span>Visit</span>
               <IconExternal />
             </a>
           </div>
 
-          {/* Métricas */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-              <p className="text-2xl font-bold text-[var(--text)]">{proyecto.actividad_ultima_hora}</p>
-              <p className="text-sm text-[var(--text-muted)]">Eventos (1h)</p>
-            </div>
-            <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-              <p className="text-2xl font-bold text-[var(--text)]">{proyecto.usuarios_activos}</p>
-              <p className="text-sm text-[var(--text-muted)]">Usuarios activos</p>
-            </div>
-            <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-              <p className={`text-2xl font-bold ${proyecto.errores_ultima_hora > 0 ? '' : 'text-[var(--text)]'}`} style={proyecto.errores_ultima_hora > 0 ? { color: 'var(--status-error)' } : undefined}>
-                {proyecto.errores_ultima_hora}
-              </p>
-              <p className="text-sm text-[var(--text-muted)]">Errores (1h)</p>
-            </div>
-            <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-              <p className="text-sm font-medium text-[var(--text)]">
-                {proyecto.last_activity_at 
-                  ? formatDistanceToNow(new Date(proyecto.last_activity_at), { addSuffix: true, locale: es })
-                  : 'Sin actividad'}
-              </p>
-              <p className="text-sm text-[var(--text-muted)]">Última actividad</p>
-            </div>
-          </div>
+          {/* Submenu cliente: Resumen, Sync, Facturas, Soporte */}
+          <nav className="flex items-center gap-1 mb-6 border-b border-[var(--border)]">
+            {(
+              [
+                { id: 'proyectos' as ClientTab, label: 'Resumen' },
+                { id: 'sync' as ClientTab, label: 'Sync' },
+                { id: 'facturas' as ClientTab, label: 'Facturas' },
+                { id: 'soporte' as ClientTab, label: 'Soporte' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setClientTab(tab.id)}
+                className={`px-4 py-3 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px ${
+                  clientTab === tab.id
+                    ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--bg)]'
+                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
 
-          {/* Error activo */}
-          {proyecto.ultimo_error && (
-            <div className="p-4 rounded-xl border mb-8 bg-[var(--status-error)]/10" style={{ borderColor: 'var(--status-error)' }}>
-              <p className="text-sm font-medium mb-1" style={{ color: 'var(--status-error)' }}>Último error</p>
-              <p className="text-sm text-[var(--text)]">{proyecto.ultimo_error.error_mensaje}</p>
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                {formatDistanceToNow(new Date(proyecto.ultimo_error.timestamp), { addSuffix: true, locale: es })}
-              </p>
-            </div>
+          {/* Contenido según pestaña */}
+          {clientTab === 'proyectos' && (
+            <>
+              {/* When configured: Microtiendas como avatares redondos + detalle por tienda (usuarios + actividades) */}
+              {project.client_api_configured && (
+            <>
+              {/* Microtiendas: avatares redondos clicables */}
+              <section className="mb-8">
+                <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Microtiendas</h2>
+                {storesLoading ? (
+                  <p className="text-sm text-[var(--text-muted)]">Cargando...</p>
+                ) : stores.length === 0 ? (
+                  <p className="text-sm text-[var(--text-muted)]">Sin tiendas. Ejecuta Sync para traer las microtiendas del cliente.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-8">
+                    {stores.map((s) => {
+                      const isSelected = selectedStoreId === s.external_id;
+                      const storeName = s.name ?? s.external_id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setSelectedStoreId(isSelected ? null : s.external_id)}
+                          className={`flex flex-col items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] rounded-2xl p-2 ${isSelected ? 'bg-[var(--bg)] ring-1 ring-[var(--accent)]/50' : 'hover:bg-[var(--bg)]/50 rounded-2xl'}`}
+                        >
+                          <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-[var(--bg-secondary)] border border-[var(--border)] shadow-inner">
+                            {s.logo_url ? (
+                              <img src={s.logo_url} alt={storeName} className="w-full h-full object-cover object-center" />
+                            ) : (
+                              <span className="text-xl font-semibold text-[var(--text-muted)]">{(storeName).charAt(0)}</span>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium text-[var(--text)] text-center max-w-[160px] leading-tight break-words" title={storeName}>{storeName}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+
+              {/* Detalle de microtienda seleccionada: Usuarios + Actividades */}
+              {selectedStoreId && (
+                <div className="mb-8 grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {(() => {
+                    const selectedStore = stores.find((s) => s.external_id === selectedStoreId);
+                    const statusConfig: Record<string, { label: string; desc: string; color: string; bg: string }> = {
+                      active: { label: 'Sistema arriba', desc: 'El sistema del cliente responde correctamente.', color: 'text-[var(--status-ok)]', bg: 'bg-[var(--status-ok)]' },
+                      inactive: { label: 'Sistema caído', desc: 'El sistema no responde o está inactivo.', color: 'text-[var(--status-error)]', bg: 'bg-[var(--status-error)]' },
+                      maintenance: { label: 'En mantenimiento', desc: 'El sistema está en mantenimiento programado.', color: 'text-amber-500', bg: 'bg-amber-500' },
+                      error: { label: 'Error', desc: 'Se detectó un error en el sistema.', color: 'text-[var(--status-error)]', bg: 'bg-[var(--status-error)]' },
+                    };
+                    const effectiveStatus = liveHealth ? liveHealth.status : project.status_servidor;
+                    const status = statusConfig[effectiveStatus] ?? { label: effectiveStatus || 'Desconocido', desc: 'Estado del servidor del cliente.', color: 'text-[var(--text-muted)]', bg: 'bg-[var(--text-muted)]' };
+                    return (
+                      <>
+                        <section className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] overflow-hidden">
+                          <h2 className="text-sm font-medium text-[var(--text-muted)] p-4 border-b border-[var(--border)]">
+                            Estado · {selectedStore?.name ?? selectedStoreId}
+                          </h2>
+                          <div className="p-4 space-y-4">
+                            {liveHealthLoading ? (
+                              <div className="flex items-center gap-3 p-4 rounded-lg border border-[var(--border)] bg-[var(--bg)]">
+                                <IconSpinner />
+                                <p className="text-sm text-[var(--text-muted)]">Comprobando...</p>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3 p-4 rounded-lg border border-[var(--border)] bg-[var(--bg)]">
+                                <span className={`w-3 h-3 rounded-full shrink-0 ${status.bg}`} aria-hidden />
+                                <div>
+                                  <p className={`text-sm font-medium ${status.color}`}>{status.label}</p>
+                                  <p className="text-sm text-[var(--text-muted)] mt-0.5">
+                                    {status.desc}
+                                    {liveHealth?.latency_ms != null && liveHealth.status === 'active' && (
+                                      <span className="ml-1">· Respuesta en {liveHealth.latency_ms} ms</span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            {project.client_api_url && (
+                              <p className="text-xs text-[var(--text-muted)]">
+                                Servidor: <code className="bg-[var(--bg)] px-1 rounded">{project.client_api_url}</code>
+                              </p>
+                            )}
+                            {healthHistory.length > 0 && (
+                              <div className="pt-2 border-t border-[var(--border)]">
+                                <p className="text-xs font-medium text-[var(--text-muted)] mb-2">Historial (cada vez que se abre)</p>
+                                <ul className="space-y-1.5 max-h-[200px] overflow-y-auto text-sm">
+                                  {healthHistory.map((h) => (
+                                    <li key={h.id} className="flex items-center justify-between gap-2 text-[var(--text)]">
+                                      <span className="text-[var(--text-muted)] shrink-0">{formatDistanceToNow(new Date(h.checked_at), { addSuffix: true, locale: es })}</span>
+                                      <span className={h.status === 'active' ? 'text-[var(--status-ok)]' : 'text-[var(--status-error)]'}>
+                                        {h.status === 'active' ? 'Arriba' : 'Caído'}
+                                        {h.latency_ms != null && h.status === 'active' && (
+                                          <span className="text-[var(--text-muted)] font-normal"> · {h.latency_ms} ms</span>
+                                        )}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </section>
+                        <section className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] overflow-hidden">
+                          <h2 className="text-sm font-medium text-[var(--text-muted)] p-4 border-b border-[var(--border)]">
+                            Actividades · {selectedStore?.name ?? selectedStoreId}
+                          </h2>
+                          <div className="p-4 max-h-[400px] overflow-y-auto">
+                            {activitiesLoading ? (
+                              <p className="text-sm text-[var(--text-muted)]">Cargando actividades...</p>
+                            ) : activities.length === 0 ? (
+                              <p className="text-sm text-[var(--text-muted)]">Sin actividades recientes en esta tienda.</p>
+                            ) : (
+                              <ul className="space-y-3">
+                                {activities.map((a) => (
+                                  <li key={a.id} className="text-sm border-b border-[var(--border)] pb-3 last:border-0 last:pb-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <span className="text-[var(--text)] font-medium">{a.user_name ?? 'Usuario'}</span>
+                                      <span className="text-[var(--text-muted)] text-xs shrink-0">{formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale: es })}</span>
+                                    </div>
+                                    <p className="text-[var(--text)] mt-0.5">
+                                      {activityLabel(a.action, a.module, a.details ?? {})}
+                                    </p>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </section>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+            </>
+              )}
+
+              {/* When NOT configured: show Microtiendas + Usuarios below sync (when configured they're above) */}
+              {!project.client_api_configured && (
+            <>
+              <section className="mb-8">
+                <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Microtiendas</h2>
+                {storesLoading ? (
+                  <p className="text-sm text-[var(--text-muted)]">Cargando...</p>
+                ) : stores.length === 0 ? (
+                  <p className="text-sm text-[var(--text-muted)]">Sin tiendas. Ejecuta Sync para traer las microtiendas del cliente.</p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {stores.map((s) => (
+                      <div
+                        key={s.id}
+                        className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] flex flex-col items-center gap-2 text-center"
+                      >
+                        {s.logo_url ? (
+                          <img src={s.logo_url} alt={s.name ?? s.external_id} className="w-12 h-12 rounded-lg object-contain bg-[var(--bg)]" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-lg font-semibold text-[var(--text-muted)]">
+                            {(s.name ?? '?').charAt(0)}
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-[var(--text)] truncate w-full">{s.name ?? s.external_id}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+              <section className="mb-8">
+                <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Usuarios</h2>
+                {usersLoading ? (
+                  <p className="text-sm text-[var(--text-muted)]">Cargando...</p>
+                ) : users.length === 0 ? (
+                  <p className="text-sm text-[var(--text-muted)]">Sin usuarios. Ejecuta Sync para traer los usuarios del cliente.</p>
+                ) : (
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[var(--border)] text-left text-[var(--text-muted)]">
+                          <th className="p-3 font-medium">Nombre</th>
+                          <th className="p-3 font-medium">Email</th>
+                          <th className="p-3 font-medium">Tienda</th>
+                          <th className="p-3 font-medium w-20">Dueño</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((u) => (
+                          <tr key={u.id} className="border-b border-[var(--border)] last:border-0">
+                            <td className="p-3 text-[var(--text)]">{u.name ?? '—'}</td>
+                            <td className="p-3 text-[var(--text)]">{u.email}</td>
+                            <td className="p-3 text-[var(--text-muted)]">{u.store_name ?? (u.store_id ? u.store_id : '—')}</td>
+                            <td className="p-3">{u.is_owner ? <span className="text-xs font-medium text-[var(--accent)]">Sí</span> : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            </>
+              )}
+
+              {/* Last activity */}
+              {project.last_activity_at && (
+                <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+                  <p className="text-sm text-[var(--text-muted)]">
+                    Last activity: {formatDistanceToNow(new Date(project.last_activity_at), { addSuffix: true, locale: es })}
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Módulos más usados */}
-            <div className="lg:col-span-1">
-              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Módulos más usados</h2>
-              <div className="space-y-2">
-                {proyecto.top_modulos.map((m, i) => (
-                  <div key={m.modulo} className="flex items-center justify-between p-3 rounded-lg border border-[var(--border)]">
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-xs text-[var(--text-muted)]">
-                        {i + 1}
-                      </span>
-                      <span className="text-sm text-[var(--text)]">{m.modulo}</span>
-                    </div>
-                    <span className="text-sm text-[var(--text-muted)]">{m.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Actividad reciente */}
-            <div className="lg:col-span-2">
-              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Actividad reciente</h2>
-              <div className="space-y-2">
-                {proyecto.actividades_recientes.map((act) => (
-                  <div 
-                    key={act.id} 
-                    className={`p-3 rounded-lg border ${act.es_error ? 'bg-[var(--status-error)]/10' : 'border-[var(--border)]'}`}
-                    style={act.es_error ? { borderColor: 'var(--status-error)' } : undefined}
+          {clientTab === 'sync' && (
+            <section className="mb-8 p-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Client app (store sync)</h2>
+              <p className="text-sm text-[var(--text-muted)] mb-4">
+                Configure the client app API so we can sync users and stores. The client must expose <code className="bg-[var(--bg)] px-1 rounded">GET /api/andres/usuarios-tiendas</code> with header <code className="bg-[var(--bg)] px-1 rounded">x-andres-api-key</code>.
+              </p>
+              <div className="space-y-4 max-w-xl">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text)] mb-1">Client API URL</label>
+                  <input
+                    type="url"
+                    value={clientApiUrl}
+                    onChange={(e) => setClientApiUrl(e.target.value)}
+                    placeholder="https://client-app.example.com or http://localhost:3002"
+                    className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text)] mb-1">Client API key</label>
+                  <input
+                    type="password"
+                    value={clientApiKey}
+                    onChange={(e) => setClientApiKey(e.target.value)}
+                    placeholder={project.client_api_configured ? 'Leave blank to keep current' : 'Same value as ANDRES_API_KEY in client'}
+                    className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSaveConfig}
+                    disabled={saveStatus === 'saving'}
+                    className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] hover:bg-[var(--bg-secondary)] disabled:opacity-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className={`text-sm ${act.es_error ? '' : 'text-[var(--text)]'}`} style={act.es_error ? { color: 'var(--status-error)' } : undefined}>
-                          {act.accion_realizada}
-                        </p>
-                        <p className="text-xs text-[var(--text-muted)] mt-1">
-                          {act.usuario_nombre} · {act.modulo_visitado}
-                        </p>
-                      </div>
-                      <span className="text-xs text-[var(--text-muted)]">
-                        {formatDistanceToNow(new Date(act.timestamp), { addSuffix: true, locale: es })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? 'Error' : 'Save config'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSync}
+                    disabled={syncStatus === 'syncing' || (!project.client_api_configured && (!clientApiUrl.trim() || !clientApiKey))}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {syncStatus === 'syncing' ? <IconSpinner /> : <IconRefresh />}
+                    {syncStatus === 'syncing' ? 'Syncing...' : 'Sync users from client app'}
+                  </button>
+                </div>
+                {!project.client_api_configured && !clientApiUrl.trim() && (
+                  <p className="text-sm text-[var(--status-warn)]">Save config or fill URL and API key above, then run sync.</p>
+                )}
+                {syncMessage && (
+                  <p className={`text-sm ${syncStatus === 'error' ? 'text-[var(--status-error)]' : 'text-[var(--text-muted)]'}`}>
+                    {syncMessage}
+                  </p>
+                )}
               </div>
-            </div>
-          </div>
+            </section>
+          )}
+
+          {clientTab === 'facturas' && (
+            <section className="mb-8 p-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Facturas</h2>
+              <p className="text-sm text-[var(--text-muted)]">
+                Aquí podrás ver y gestionar las facturas de {project.nombre_proyecto}. (Próximamente.)
+              </p>
+            </section>
+          )}
+
+          {clientTab === 'soporte' && (
+            <section className="mb-8 p-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Soporte</h2>
+              <p className="text-sm text-[var(--text-muted)] mb-4">
+                Tickets y solicitudes de soporte para {project.nombre_proyecto}.
+              </p>
+              <Link
+                href="/backstage/tickets"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-colors text-sm"
+              >
+                Ver tickets
+                <IconExternal />
+              </Link>
+            </section>
+          )}
         </main>
       </div>
     </BackstageGuard>

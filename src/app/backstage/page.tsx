@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useProyectos } from '@/lib/hooks/useProyectos';
@@ -65,13 +67,54 @@ const IconPlus = () => (
 );
 
 export default function BackstageDashboard() {
+  const router = useRouter();
   const { proyectos, loading, refetch, isDemo } = useProyectos(15000);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createForm, setCreateForm] = useState({
+    nombre_cliente: '',
+    nombre_proyecto: '',
+    url_dominio: '',
+    descripcion: '',
+  });
 
   const activos = proyectos.filter(p => p.status_visual === 'active').length;
   const errores = proyectos.filter(p => p.status_visual === 'error').length;
 
-  // Filtrar solo tickets activos (no resueltos)
   const ticketsActivos = MOCK_TICKETS.filter(t => t.estado !== 'resuelto');
+
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreateLoading(true);
+    try {
+      const res = await fetch('/api/backstage/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_cliente: createForm.nombre_cliente.trim(),
+          nombre_proyecto: createForm.nombre_proyecto.trim(),
+          url_dominio: createForm.url_dominio.trim(),
+          descripcion: createForm.descripcion.trim() || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCreateError(data.error ?? 'Error al crear el proyecto');
+        setCreateLoading(false);
+        return;
+      }
+      setCreateOpen(false);
+      setCreateForm({ nombre_cliente: '', nombre_proyecto: '', url_dominio: '', descripcion: '' });
+      await refetch();
+      if (data.id) router.push(`/backstage/proyecto/${data.id}`);
+    } catch {
+      setCreateError('Error al crear el proyecto');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
 
   return (
     <BackstageGuard>
@@ -146,11 +189,92 @@ export default function BackstageDashboard() {
                 {proyectos.map((p) => (
                   <ProyectoCard key={p.id} proyecto={p} />
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setCreateOpen(true)}
+                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-[var(--text-muted)]/60 hover:border-[var(--text-muted)] hover:bg-[var(--bg)]/50 transition-colors text-[var(--text-muted)] hover:text-[var(--text)] min-h-[120px]"
+                >
+                  <IconPlus />
+                  <span className="text-sm">Crear proyecto</span>
+                </button>
               </div>
             </div>
             <div>
               <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Actividad</h2>
               <ActivityFeed />
+            </div>
+          </div>
+        )}
+
+        {/* Modal Crear proyecto */}
+        {createOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => !createLoading && setCreateOpen(false)}>
+            <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--bg)] shadow-lg p-6" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Crear proyecto</h3>
+              <form onSubmit={handleCreateProject} className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-muted)] mb-0.5">A quien facturar</label>
+                  <input
+                    type="text"
+                    value={createForm.nombre_cliente}
+                    onChange={e => setCreateForm(f => ({ ...f, nombre_cliente: e.target.value }))}
+                    placeholder="Razón social"
+                    className="modal-input w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-muted)] mb-0.5">Nombre del proyecto</label>
+                  <input
+                    type="text"
+                    value={createForm.nombre_proyecto}
+                    onChange={e => setCreateForm(f => ({ ...f, nombre_proyecto: e.target.value }))}
+                    placeholder="Sistema o app"
+                    className="modal-input w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-muted)] mb-0.5">URL del dominio</label>
+                  <input
+                    type="url"
+                    value={createForm.url_dominio}
+                    onChange={e => setCreateForm(f => ({ ...f, url_dominio: e.target.value }))}
+                    placeholder="https://..."
+                    className="modal-input w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-muted)] mb-0.5">Descripción</label>
+                  <textarea
+                    value={createForm.descripcion}
+                    onChange={e => setCreateForm(f => ({ ...f, descripcion: e.target.value }))}
+                    placeholder="Breve"
+                    rows={2}
+                    className="modal-input w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] resize-none"
+                  />
+                </div>
+                {createError && (
+                  <p className="text-sm" style={{ color: 'var(--status-error)' }}>{createError}</p>
+                )}
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => !createLoading && setCreateOpen(false)}
+                    className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text)] hover:bg-[var(--bg-secondary)] transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createLoading}
+                    className="flex-1 px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  >
+                    {createLoading ? 'Creando...' : 'Crear'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

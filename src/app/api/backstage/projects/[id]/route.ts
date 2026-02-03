@@ -1,0 +1,111 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Missing Supabase configuration');
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+export interface ProjectForBackstage {
+  id: string;
+  nombre_cliente: string;
+  nombre_proyecto: string;
+  url_dominio: string;
+  logo_url: string | null;
+  main_store_external_id: string | null;
+  status_servidor: string;
+  last_activity_at: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  client_api_url: string | null;
+  client_api_configured: boolean;
+}
+
+/**
+ * GET /api/backstage/projects/[id]
+ * Returns project for backstage detail. Does not expose client_api_key value.
+ */
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = getSupabase();
+
+    const { data, error } = await supabase
+      .from('proyectos_maestros')
+      .select('id, nombre_cliente, nombre_proyecto, url_dominio, logo_url, main_store_external_id, status_servidor, last_activity_at, owner_name, owner_email, client_api_url, client_api_key')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const row = data as Record<string, unknown>;
+    const out: ProjectForBackstage = {
+      id: row.id as string,
+      nombre_cliente: row.nombre_cliente as string,
+      nombre_proyecto: row.nombre_proyecto as string,
+      url_dominio: row.url_dominio as string,
+      logo_url: (row.logo_url as string) ?? null,
+      main_store_external_id: (row.main_store_external_id as string) ?? null,
+      status_servidor: row.status_servidor as string,
+      last_activity_at: (row.last_activity_at as string) ?? null,
+      owner_name: (row.owner_name as string) ?? null,
+      owner_email: (row.owner_email as string) ?? null,
+      client_api_url: (row.client_api_url as string) ?? null,
+      client_api_configured: !!(row.client_api_url && row.client_api_key),
+    };
+
+    return NextResponse.json(out);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Failed to fetch project';
+    console.error('[backstage/projects/[id] GET]', e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/backstage/projects/[id]
+ * Body: { client_api_url?: string, client_api_key?: string }
+ * Empty string for client_api_key means "do not change" (keep current).
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json().catch(() => ({}));
+    const client_api_url = typeof body.client_api_url === 'string' ? body.client_api_url.trim() || null : undefined;
+    const client_api_key = typeof body.client_api_key === 'string' ? body.client_api_key : undefined;
+
+    const supabase = getSupabase();
+
+    const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (client_api_url !== undefined) payload.client_api_url = client_api_url;
+    // Only update key when a non-empty value is sent; empty string = do not change
+    if (client_api_key !== undefined && client_api_key !== '') payload.client_api_key = client_api_key;
+
+    const { data, error } = await supabase
+      .from('proyectos_maestros')
+      .update(payload)
+      .eq('id', id)
+      .select('id, client_api_url')
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json(data);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Failed to update project';
+    console.error('[backstage/projects/[id] PATCH]', e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

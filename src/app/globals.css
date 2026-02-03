@@ -79,6 +79,13 @@ body {
   transition: background-color 0.2s, color 0.2s;
 }
 
+/* Modal inputs: placeholders más difuminados y pequeños */
+.modal-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.55;
+  font-size: 0.8125rem;
+}
+
 /* Avatar */
 .avatar-wrapper {
   position: relative;

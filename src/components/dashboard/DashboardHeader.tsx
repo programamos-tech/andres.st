@@ -8,11 +8,13 @@ import Image from 'next/image';
 import { BRAND } from '@/lib/constants';
 
 interface DashboardHeaderProps {
-  totalProyectos: number;
-  proyectosActivos: number;
-  proyectosConErrores: number;
-  onRefresh: () => void;
+  totalProyectos?: number;
+  proyectosActivos?: number;
+  proyectosConErrores?: number;
+  onRefresh?: () => void;
   isDemo?: boolean;
+  /** Si false, no se muestran stats ni botón refrescar (ej. en detalle de proyecto). Default true */
+  showStats?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -22,11 +24,12 @@ const NAV_ITEMS = [
 ];
 
 export function DashboardHeader({ 
-  totalProyectos, 
-  proyectosActivos, 
-  proyectosConErrores,
+  totalProyectos = 0, 
+  proyectosActivos = 0, 
+  proyectosConErrores = 0,
   onRefresh,
-  isDemo
+  isDemo,
+  showStats = true,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -91,13 +94,15 @@ export function DashboardHeader({
         {/* Stats y acciones */}
         <div className="flex items-center gap-6">
           {/* Stats */}
-          <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-muted)]">
-            <span>{totalProyectos} proyectos</span>
-            <span style={{ color: 'var(--status-ok)' }}>{proyectosActivos} activos</span>
-            {proyectosConErrores > 0 && (
-              <span style={{ color: 'var(--status-error)' }}>{proyectosConErrores} errores</span>
-            )}
-          </div>
+          {showStats && (
+            <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-muted)]">
+              <span>{totalProyectos} proyectos</span>
+              <span style={{ color: 'var(--status-ok)' }}>{proyectosActivos} activos</span>
+              {proyectosConErrores > 0 && (
+                <span style={{ color: 'var(--status-error)' }}>{proyectosConErrores} errores</span>
+              )}
+            </div>
+          )}
 
           {/* Hora */}
           <span className="text-sm text-[var(--text-muted)] hidden sm:block font-mono">
@@ -105,15 +110,17 @@ export function DashboardHeader({
           </span>
 
           {/* Refresh */}
-          <button
-            onClick={onRefresh}
-            className="p-2 rounded-lg border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)]"
-            title="Actualizar"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="p-2 rounded-lg border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)]"
+              title="Actualizar"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          )}
 
           {/* Cerrar sesión */}
           <button
