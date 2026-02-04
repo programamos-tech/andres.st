@@ -8,7 +8,7 @@ import { BRAND } from '@/lib/constants';
 const links = [
   { href: '/', label: 'Inicio' },
   { href: '/tienda', label: 'Tienda' },
-  { href: '/ayuda', label: 'Andrebot' },
+  { href: '/andrebot', label: 'Andrebot' },
   { href: '/backstage', label: 'Backstage' },
 ];
 

@@ -2,43 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
 import { PRODUCTOS } from '@/lib/tienda-productos';
 import type { Producto } from '@/lib/tienda-productos';
-
-const TICKET_STORAGE_PREFIX = 'ticket-data-';
-
-function generarTicketId(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let result = 'tk_';
-  for (let i = 0; i < 12; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
-}
-
-function guardarTicketEnStorage(ticket: {
-  id: string;
-  proyecto_nombre: string;
-  modulo: string;
-  tienda: string;
-  titulo: string;
-  descripcion: string;
-  estado: string;
-  prioridad: string;
-  creado_por_nombre: string;
-  created_at: string;
-  updated_at: string;
-  historial: { estado: string; fecha: string; nota?: string }[];
-}) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(TICKET_STORAGE_PREFIX + ticket.id, JSON.stringify(ticket));
-  } catch {
-    // ignore
-  }
-}
 
 export interface AndrebotChatProps {
   /** IDs de productos en el carrito (solicitudes) */
@@ -57,7 +23,6 @@ export function AndrebotChat({ solicitudes, onClose, nombreInicial }: AndrebotCh
   const [proyecto, setProyecto] = useState('');
   const [nombre, setNombre] = useState(nombreInicial || '');
   const [inputValue, setInputValue] = useState('');
-  const [ticketLink, setTicketLink] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const productosSolicitados = solicitudes
@@ -97,43 +62,11 @@ export function AndrebotChat({ solicitudes, onClose, nombreInicial }: AndrebotCh
     if (step === 'nombre') {
       setNombre(texto);
       setMessages((m) => [...m, { role: 'user', text: texto }]);
-
-      const ticketId = generarTicketId();
-      const titulo =
-        productosSolicitados.length === 1
-          ? `Solicitud: ${productosSolicitados[0].titulo}`
-          : `Solicitud catálogo: ${productosSolicitados.length} módulos`;
-      const descripcion = productosSolicitados
-        .map(
-          (p) =>
-            `- ${p.titulo} (${p.tipo === 'funcionalidad' ? 'Funcionalidad' : p.tipo === 'integracion' ? 'Integración' : 'Sistema completo'})`
-        )
-        .join('\n');
-      const now = new Date().toISOString();
-      const ticket = {
-        id: ticketId,
-        proyecto_nombre: proyecto,
-        modulo: 'Catálogo',
-        tienda: '',
-        titulo,
-        descripcion,
-        estado: 'creado',
-        prioridad: 'media',
-        creado_por_nombre: texto,
-        created_at: now,
-        updated_at: now,
-        historial: [{ estado: 'creado', fecha: now }]
-      };
-      guardarTicketEnStorage(ticket);
-
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const link = `${baseUrl}/ticket/${ticketId}`;
-      setTicketLink(link);
       setMessages((m) => [
         ...m,
         {
           role: 'bot',
-          text: `Listo, creé tu ticket. Podés seguir el estado acá:\n\n${link}`
+          text: 'Por el momento escribime por WhatsApp con tu solicitud y te ayudo con la cotización.'
         }
       ]);
       setStep('creado');
@@ -188,16 +121,18 @@ export function AndrebotChat({ solicitudes, onClose, nombreInicial }: AndrebotCh
               </div>
               <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)]">
                 <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{msg.text}</p>
-                {step === 'creado' && i === messages.length - 1 && ticketLink && (
-                  <Link
-                    href={ticketLink}
+                {step === 'creado' && i === messages.length - 1 && (
+                  <a
+                    href={`https://wa.me/${BRAND.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-[var(--text)] text-[var(--bg)] text-sm font-medium hover:opacity-90 transition-opacity"
                   >
-                    Ver estado del ticket
+                    Ir a WhatsApp
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </Link>
+                  </a>
                 )}
               </div>
             </div>

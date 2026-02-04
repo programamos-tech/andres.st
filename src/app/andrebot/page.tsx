@@ -14,16 +14,74 @@ type OpcionInicio = 'soporte' | 'cotizacion' | 'mis_servicios';
 type ChatMessage = {
   role: 'user' | 'bot';
   text: string;
-  action?: 'ticket' | 'cotizar';
+  action?: 'ticket' | 'cotizar' | 'elegir_soporte' | 'elegir_modulo' | 'elegir_prioridad';
   storeLogo?: string;
   storeName?: string;
   /** Id del ticket creado en la DB; si existe, se muestra link "Ver estado del ticket" */
   ticketId?: string;
+  /** Tickets existentes asociados al correo (para mostrar "Tenés este ticket en el estado correspondiente") */
+  ticketsExistentes?: { id: string; supportId?: string; estadoLabel: string; titulo?: string }[];
+  /** URL de imagen adjunta (ej. screenshot del error) */
+  imageUrl?: string;
 };
+
+const MODULOS_PRINCIPALES = ['Clientes', 'Productos', 'Garantías', 'Ventas', 'Dashboard'] as const;
 
 function esEmailValido(texto: string): boolean {
   const trimmed = texto.trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && trimmed.length <= 200;
+}
+
+/** Redimensiona y comprime una imagen al tamaño más pequeño razonable para subir a soporte (max 1024px, JPEG ~0.6). */
+async function comprimirImagenParaSoporte(file: File): Promise<File> {
+  const maxSize = 1024;
+  const quality = 0.6;
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      let width = w;
+      let height = h;
+      if (w > maxSize || h > maxSize) {
+        if (w >= h) {
+          width = maxSize;
+          height = Math.round((h * maxSize) / w);
+        } else {
+          height = maxSize;
+          width = Math.round((w * maxSize) / h);
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const name = file.name.replace(/\.[^.]+$/, '') || 'screenshot';
+          resolve(new File([blob], `${name}.jpg`, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
 }
 
 interface Pregunta {
@@ -352,11 +410,34 @@ function buscarRespuesta(userText: string): { text: string; action?: 'ticket' | 
   };
 }
 
+// Iconos de prioridad para el chat
+const IconPrioridadMedio = () => (
+  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const IconPrioridadMaromas = () => (
+  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+const IconPrioridadEspera = () => (
+  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const IconPrioridadUrgente = () => (
+  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+);
+
 const PRIORIDADES = [
-  { id: 'super_alta', label: 'Super urgente' },
-  { id: 'alta', label: 'Alta' },
-  { id: 'media', label: 'Media' },
-  { id: 'baja', label: 'Cuando puedas' }
+  { id: 'medio' as const, label: 'Medio', desc: 'Puedo sobrevivir', Icon: IconPrioridadMedio },
+  { id: 'alto_maromas' as const, label: 'Alto (maromas)', desc: 'Me toca hacer maromas para hacerlo funcionar', Icon: IconPrioridadMaromas },
+  { id: 'alto_espera' as const, label: 'Alto (puede esperar)', desc: 'No puedo hacer un flujo pero puede esperar un par de horas', Icon: IconPrioridadEspera },
+  { id: 'urgente' as const, label: 'Urgente', desc: 'No puedo usar la plataforma, todo está caído', Icon: IconPrioridadUrgente },
 ];
 
 // Iconos
@@ -401,18 +482,90 @@ export default function AyudaPage() {
   const [vista, setVista] = useState<Vista>('home');
   const [opcionInicio, setOpcionInicio] = useState<OpcionInicio | null>(null);
   const [correoUsuario, setCorreoUsuario] = useState<string | null>(null);
+  const [nombreUsuario, setNombreUsuario] = useState<string | null>(null);
+  const [proyectoIdIdentificado, setProyectoIdIdentificado] = useState<string | null>(null);
+  const [proyectoNombreIdentificado, setProyectoNombreIdentificado] = useState<string | null>(null);
+  const [proyectoLogoIdentificado, setProyectoLogoIdentificado] = useState<string | null>(null);
   const [pasoSoporte, setPasoSoporte] = useState<'email' | 'listo'>('email');
+  const [tipoSoporte, setTipoSoporte] = useState<'error' | 'mejora' | null>(null);
   const [soportePasoPregunta, setSoportePasoPregunta] = useState<0 | 1 | 2 | 3>(0);
   const [soporteRespuestas, setSoporteRespuestas] = useState<string[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typing, setTyping] = useState(false);
   const [typingLabel, setTypingLabel] = useState<string | null>(null);
+  const [uploadingImagen, setUploadingImagen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [ticketDescripcion, setTicketDescripcion] = useState('');
   const [ticketPrioridad, setTicketPrioridad] = useState('');
   const [ticketCreado, setTicketCreado] = useState<Ticket | null>(null);
+  const [chatId, setChatId] = useState<string | null>(null);
+  const [restaurandoChat, setRestaurandoChat] = useState(true); // true al montar hasta que carguemos o descartemos el chat guardado
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const respuestasParaTicketRef = useRef<string[] | null>(null);
+  const prioridadSeleccionadaRef = useRef<string>('medio');
+  const nombreParaChatRef = useRef<string>('');
+  const lastPersistedCountRef = useRef(0);
+  const loadedChatIdRef = useRef<string | null>(null);
+
+  const AYUDA_CHAT_STORAGE_KEY = 'ayuda_chat_id';
+
+  // Al montar: si hay chat guardado en localStorage, restaurarlo para que "Volver al chat" muestre el historial
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem(AYUDA_CHAT_STORAGE_KEY) : null;
+    if (!stored) {
+      setRestaurandoChat(false);
+      return;
+    }
+    fetch(`/api/ayuda/chats/${stored}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { id: string; messages: ChatMessage[]; creado_por_email?: string; creado_por_nombre?: string } | null) => {
+        if (data?.messages?.length) {
+          loadedChatIdRef.current = data.id;
+          setChatId(data.id);
+          setMessages(data.messages);
+          lastPersistedCountRef.current = data.messages.length;
+          if (data.creado_por_email) setCorreoUsuario(data.creado_por_email);
+          if (data.creado_por_nombre) setNombreUsuario(data.creado_por_nombre);
+          setOpcionInicio('soporte');
+          setPasoSoporte('listo');
+          setVista('chat');
+        }
+        setRestaurandoChat(false);
+      })
+      .catch(() => setRestaurandoChat(false));
+  }, []);
+
+  // Persistir mensajes nuevos en el chat (cuando hay chatId y hay más mensajes que los ya guardados)
+  useEffect(() => {
+    if (!chatId) return;
+    if (loadedChatIdRef.current != null && loadedChatIdRef.current !== chatId) return;
+    if (messages.length <= lastPersistedCountRef.current) return;
+    const toSave = messages.slice(lastPersistedCountRef.current);
+    if (toSave.length === 0) return;
+    const countAfter = lastPersistedCountRef.current + toSave.length;
+    fetch(`/api/ayuda/chats/${chatId}/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: toSave.map((m) => ({
+          role: m.role,
+          text: m.text,
+          ...(m.action && { action: m.action }),
+          ...(m.storeLogo && { storeLogo: m.storeLogo }),
+          ...(m.storeName && { storeName: m.storeName }),
+          ...(m.ticketId && { ticketId: m.ticketId }),
+          ...(m.ticketsExistentes && { ticketsExistentes: m.ticketsExistentes }),
+          ...(m.imageUrl && { imageUrl: m.imageUrl }),
+        })),
+      }),
+    })
+      .then((res) => {
+        if (res.ok) lastPersistedCountRef.current = countAfter;
+      })
+      .catch(() => {});
+  }, [chatId, messages]);
 
   const contexto = {
     proyecto: searchParams.get('proyecto') || '',
@@ -420,6 +573,9 @@ export default function AyudaPage() {
     tienda: searchParams.get('tienda') || '',
     correo: correoUsuario || ''
   };
+  // Nombre para personalizar mensajes: el que vino de la identificación por correo o el de la URL
+  const nombreParaChat = nombreUsuario || contexto.usuario || '';
+  nombreParaChatRef.current = nombreParaChat;
   // Banner solo con proyecto+usuario desde URL; nunca mostrar el correo arriba
   const tieneContexto = Boolean(contexto.proyecto && contexto.usuario);
 
@@ -432,9 +588,9 @@ export default function AyudaPage() {
       setPasoSoporte('email');
       setCorreoUsuario(null);
       setMessages([{ role: 'bot', text: `${TEXTO_PROPOSITO}\n\nHola, soy Andrebot. Veo que necesitás soporte. ¿Cuál es tu correo? Así te identificamos.` }]);
-    } else if (opcion === 'cotizacion') {
+    } else if (opcion === 'cotizacion' || opcion === 'mis_servicios') {
       setMessages([
-        { role: 'bot', text: `${TEXTO_PROPOSITO}\n\nHola, soy Andrebot. Veo que querés cotizar. Podés ver el catálogo de módulos o escribirme por WhatsApp para hablar directo.`, action: 'cotizar' }
+        { role: 'bot', text: `${TEXTO_PROPOSITO}\n\nHola, soy Andrebot. Esta opción está en construcción. Por ahora podés pedir soporte (volvé atrás y elegí "Soporte") o escribirme por WhatsApp para lo que necesites.` }
       ]);
     } else {
       setMessages([
@@ -470,7 +626,7 @@ export default function AyudaPage() {
         const start = Date.now();
         fetch(`/api/ayuda/identificar?email=${encodeURIComponent(emailNorm)}`)
           .then((res) => res.json())
-          .then((data: { found: boolean; nombre?: string; proyecto_nombre?: string; logo_url?: string | null }) => {
+          .then((data: { found: boolean; nombre?: string; proyecto_id?: string | null; proyecto_nombre?: string; logo_url?: string | null }) => {
             const elapsed = Date.now() - start;
             const wait = Math.max(0, minDelay - elapsed);
             setTimeout(() => {
@@ -478,6 +634,10 @@ export default function AyudaPage() {
               setTypingLabel(null);
               if (data.found && data.nombre != null && data.proyecto_nombre != null) {
                 setCorreoUsuario(texto);
+                setNombreUsuario(data.nombre);
+                setProyectoIdIdentificado(data.proyecto_id ?? null);
+                setProyectoNombreIdentificado(data.proyecto_nombre ?? null);
+                setProyectoLogoIdentificado(data.logo_url ?? null);
                 setMessages((m) => [
                   ...m,
                   {
@@ -485,10 +645,64 @@ export default function AyudaPage() {
                     text: `Hola ${data.nombre}, de ${data.proyecto_nombre}.`,
                     storeLogo: data.logo_url ?? undefined,
                     storeName: data.proyecto_nombre
-                  },
-                  { role: 'bot', text: 'Listo, ¿en qué te ayudo?' }
+                  }
                 ]);
                 setPasoSoporte('listo');
+                fetch('/api/ayuda/chats', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email: emailNorm,
+                    nombre: data.nombre,
+                    proyecto_id: data.proyecto_id ?? null
+                  })
+                })
+                  .then((r) => r.json())
+                  .then((created: { id?: string }) => {
+                    if (created?.id) {
+                      setChatId(created.id);
+                      loadedChatIdRef.current = created.id;
+                      if (typeof window !== 'undefined') window.localStorage.setItem(AYUDA_CHAT_STORAGE_KEY, created.id);
+                    }
+                  })
+                  .catch(() => {});
+                fetch(`/api/ayuda/tickets?email=${encodeURIComponent(emailNorm)}`)
+                  .then((r) => r.json())
+                  .then((ticketsData: { tickets?: { id: string; supportId?: string; estadoLabel: string; titulo?: string }[] }) => {
+                    const ticketsExistentes = (ticketsData.tickets || []).map((t) => ({
+                      id: t.id,
+                      supportId: t.supportId,
+                      estadoLabel: t.estadoLabel,
+                      titulo: t.titulo
+                    }));
+                    const extras: ChatMessage[] = [];
+                    if (ticketsExistentes.length > 0) {
+                      extras.push({
+                        role: 'bot',
+                        text:
+                          ticketsExistentes.length === 1
+                            ? 'Tenés este ticket en el estado correspondiente:'
+                            : `Tenés ${ticketsExistentes.length} tickets. Acá podés ver el estado de cada uno:`,
+                        ticketsExistentes
+                      });
+                    }
+                    extras.push({
+                      role: 'bot',
+                      text: `Listo, ${data.nombre}, ¿en qué te ayudo?`,
+                      action: 'elegir_soporte'
+                    });
+                    setMessages((m) => [...m, ...extras]);
+                  })
+                  .catch(() => {
+                    setMessages((m) => [
+                      ...m,
+                      {
+                        role: 'bot',
+                        text: `Listo, ${data.nombre}, ¿en qué te ayudo?`,
+                        action: 'elegir_soporte'
+                      }
+                    ]);
+                  });
               } else {
                 setMessages((m) => [
                   ...m,
@@ -529,11 +743,18 @@ export default function AyudaPage() {
       setSoporteRespuestas((r) => [...r, texto]);
       setTyping(true);
       const siguientePaso = (soportePasoPregunta + 1) as 1 | 2 | 3 | 4;
-      const preguntas: Record<1 | 2 | 3, string> = {
-        1: '¿En qué módulo o pantalla te pasa el error? (Ventas, Productos, Clientes, Dashboard, etc.)',
-        2: '¿Qué estabas haciendo cuando apareció? (contá los pasos brevemente)',
-        3: '¿Tenés un error o alerta en el sistema? Copiá y pegá acá el mensaje de error o alerta que te aparece.'
-      };
+      const esMejora = tipoSoporte === 'mejora';
+      const preguntas: Record<1 | 2 | 3, string> = esMejora
+        ? {
+            1: '¿En qué módulo o pantalla querés la mejora? (Ventas, Productos, Clientes, Dashboard, etc.)',
+            2: '¿Qué cambio te gustaría? Contame cómo te gustaría mejorar tu experiencia usando el sistema.',
+            3: 'Podés subir una imagen si ayuda a explicar la mejora.'
+          }
+        : {
+            1: '¿En qué módulo o pantalla te pasa el error? (Ventas, Productos, Clientes, Dashboard, etc.)',
+            2: '¿Qué detalle pasa? Contame qué está pasando.',
+            3: 'Podés subir una imagen del error para ubicar exactamente dónde está.'
+          };
       const respuestasCompletas = [...soporteRespuestas, texto];
       if (siguientePaso <= 3) {
         const paso = siguientePaso as 1 | 2 | 3;
@@ -543,63 +764,15 @@ export default function AyudaPage() {
           setMessages((m) => [...m, { role: 'bot', text: preguntas[paso] }]);
         }, 600 + Math.random() * 300);
       } else {
+        respuestasParaTicketRef.current = respuestasCompletas;
         setSoportePasoPregunta(0);
-        const [inicial, modulo, pasos, mensaje] = respuestasCompletas;
-        const partes = [
-          inicial && `Problema: ${inicial}`,
-          modulo && `Módulo/pantalla: ${modulo}`,
-          pasos && `Pasos: ${pasos}`,
-          mensaje && `Mensaje/comportamiento: ${mensaje}`
-        ].filter(Boolean);
-        const descripcion = partes.join('\n\n');
-        const titulo = (inicial || 'Soporte').slice(0, 80);
-        fetch('/api/tickets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            proyecto_nombre: contexto.proyecto || 'Por identificar',
-            modulo: modulo || 'General',
-            tienda: contexto.tienda || '',
-            titulo,
-            descripcion,
-            creado_por_nombre: contexto.usuario || 'Usuario',
-            creado_por_email: correoUsuario || null
-          })
-        })
-          .then((res) => res.json())
-          .then((data: { id?: string; error?: string }) => {
-            setTyping(false);
-            if (data.id) {
-              setMessages((m) => [
-                ...m,
-                {
-                  role: 'bot',
-                  text: 'Mirá, he creado un ticket de soporte. Andrés lo va a revisar y podés ver el estado automáticamente.',
-                  ticketId: data.id
-                }
-              ]);
-            } else {
-              setMessages((m) => [
-                ...m,
-                {
-                  role: 'bot',
-                  text: 'No pude crear el ticket ahora. Intentá de nuevo en un momento o escribime por WhatsApp.',
-                  action: 'ticket'
-                }
-              ]);
-            }
-          })
-          .catch(() => {
-            setTyping(false);
-            setMessages((m) => [
-              ...m,
-              {
-                role: 'bot',
-                text: 'No pude crear el ticket ahora. Intentá de nuevo en un momento o escribime por WhatsApp.',
-                action: 'ticket'
-              }
-            ]);
-          });
+        setTimeout(() => {
+          setTyping(false);
+          setMessages((m) => [
+            ...m,
+            { role: 'bot', text: '¿Qué tan urgente es el problema? Elegí una opción:', action: 'elegir_prioridad' }
+          ]);
+        }, 600 + Math.random() * 300);
       }
       return;
     }
@@ -621,7 +794,8 @@ export default function AyudaPage() {
           ...m,
           {
             role: 'bot',
-            text: '¿En qué módulo o pantalla te pasa el error? (Ventas, Productos, Clientes, Dashboard, etc.)'
+            text: '¿En qué módulo te pasa el error? Seleccioná uno:',
+            action: 'elegir_modulo'
           }
         ]);
       } else {
@@ -629,6 +803,52 @@ export default function AyudaPage() {
       }
       setTyping(false);
     }, 600 + Math.random() * 400);
+  };
+
+  const elegirErrorEnSistema = () => {
+    setTipoSoporte('error');
+    setSoporteRespuestas(['Error en el sistema']);
+    setSoportePasoPregunta(1);
+    setMessages((m) => [
+      ...m,
+      { role: 'user', text: 'Error en el sistema' },
+      {
+        role: 'bot',
+        text: '¿En qué módulo te pasa el error? Seleccioná uno:',
+        action: 'elegir_modulo'
+      }
+    ]);
+  };
+
+  const seleccionarModulo = (modulo: string) => {
+    setSoporteRespuestas((r) => [...r, modulo]);
+    setSoportePasoPregunta(2);
+    const esMejora = tipoSoporte === 'mejora';
+    setMessages((m) => [
+      ...m,
+      { role: 'user', text: modulo },
+      {
+        role: 'bot',
+        text: esMejora
+          ? '¿Qué cambio te gustaría? Contame cómo te gustaría mejorar tu experiencia usando el sistema.'
+          : '¿Qué detalle pasa? Contame qué está pasando.'
+      }
+    ]);
+  };
+
+  const elegirMejoraEnSistema = () => {
+    setTipoSoporte('mejora');
+    setSoporteRespuestas(['Mejora en el sistema']);
+    setSoportePasoPregunta(1);
+    setMessages((m) => [
+      ...m,
+      { role: 'user', text: 'Mejora en el sistema' },
+      {
+        role: 'bot',
+        text: '¿En qué módulo querés la mejora? Seleccioná uno:',
+        action: 'elegir_modulo'
+      }
+    ]);
   };
 
   const iniciarTicket = () => {
@@ -656,7 +876,7 @@ export default function AyudaPage() {
       titulo: ticketDescripcion.slice(0, 80),
       descripcion: ticketDescripcion,
       estado: 'creado',
-      creado_por_nombre: contexto.usuario || 'Usuario',
+      creado_por_nombre: nombreParaChat || 'Usuario',
       creado_por_email: correoUsuario || contexto.correo || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -664,6 +884,128 @@ export default function AyudaPage() {
     };
     setTicketCreado(nuevoTicket);
     setVista('ticket_creado');
+  };
+
+  const PRIORIDADES_IDS = ['medio', 'alto_maromas', 'alto_espera', 'urgente'] as const;
+  const prioridadValida = (p: string): p is (typeof PRIORIDADES_IDS)[number] =>
+    PRIORIDADES_IDS.includes(p as (typeof PRIORIDADES_IDS)[number]);
+
+  const seleccionarPrioridad = (prioridad: string) => {
+    const prioridadGuardada = prioridadValida(prioridad) ? prioridad : 'medio';
+    prioridadSeleccionadaRef.current = prioridadGuardada;
+    const respuestas = respuestasParaTicketRef.current;
+    respuestasParaTicketRef.current = null;
+    if (respuestas && respuestas.length >= 3) {
+      setMessages((m) => [...m, { role: 'user', text: PRIORIDADES.find((p) => p.id === prioridad)?.label || prioridad }]);
+      crearTicketConRespuestas(respuestas, prioridadGuardada);
+    }
+  };
+
+  const crearTicketConRespuestas = (respuestasCompletas: string[], prioridadParam?: string) => {
+    const [inicial, modulo, pasos, mensaje] = respuestasCompletas;
+    const esMejora = inicial === 'Mejora en el sistema';
+    const esImagen = typeof mensaje === 'string' && mensaje.startsWith('http');
+    const partes = [
+      inicial && (esMejora ? `Solicitud de mejora: ${inicial}` : `Problema: ${inicial}`),
+      modulo && `Módulo/pantalla: ${modulo}`,
+      pasos && (esMejora ? `Cambio deseado: ${pasos}` : `Descripción: ${pasos}`),
+      mensaje && (esImagen ? (esMejora ? `Imagen (referencia): ${mensaje}` : `Imagen del error: ${mensaje}`) : (esMejora ? `Detalle: ${mensaje}` : `Mensaje/comportamiento: ${mensaje}`))
+    ].filter(Boolean);
+    const descripcion = partes.join('\n\n');
+    const proyectoNombre = proyectoNombreIdentificado || contexto.proyecto || 'Por identificar';
+    const moduloNombre = modulo || 'General';
+    const tituloBase = inicial || 'Soporte';
+    const titulo = `${tituloBase} · ${moduloNombre} · ${proyectoNombre}`.slice(0, 80);
+    const prioridadParaApi = prioridadValida(prioridadSeleccionadaRef.current)
+      ? prioridadSeleccionadaRef.current
+      : (prioridadParam && prioridadValida(prioridadParam) ? prioridadParam : 'medio');
+    setTyping(true);
+    fetch('/api/tickets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proyecto_id: proyectoIdIdentificado || null,
+        proyecto_nombre: proyectoNombreIdentificado || contexto.proyecto || 'Por identificar',
+        logo_url: proyectoLogoIdentificado || null,
+        modulo: modulo || 'General',
+        tienda: contexto.tienda || '',
+        titulo,
+        descripcion,
+        creado_por_nombre: nombreParaChat || 'Usuario',
+        creado_por_email: correoUsuario || null,
+        prioridad: prioridadParaApi
+      })
+    })
+      .then((res) => res.json())
+      .then((data: { id?: string; error?: string }) => {
+        setTyping(false);
+        if (data.id) {
+          const nombre = nombreParaChatRef.current;
+          setMessages((m) => [
+            ...m,
+            {
+              role: 'bot',
+              text: nombre
+                ? `Mirá, ${nombre}, he creado un ticket de soporte. Andrés lo va a revisar y podés ver el estado automáticamente.`
+                : 'Mirá, he creado un ticket de soporte. Andrés lo va a revisar y podés ver el estado automáticamente.',
+              ticketId: data.id
+            }
+          ]);
+        } else {
+          setMessages((m) => [
+            ...m,
+            {
+              role: 'bot',
+              text: 'No pude crear el ticket ahora. Intentá de nuevo en un momento o escribime por WhatsApp.',
+              action: 'ticket'
+            }
+          ]);
+        }
+      })
+      .catch(() => {
+        setTyping(false);
+        setMessages((m) => [
+          ...m,
+          {
+            role: 'bot',
+            text: 'No pude crear el ticket ahora. Intentá de nuevo en un momento o escribime por WhatsApp.',
+            action: 'ticket'
+          }
+        ]);
+      });
+  };
+
+  const subirImagenError = async (file: File) => {
+    setUploadingImagen(true);
+    const form = new FormData();
+    const fileToUpload = await comprimirImagenParaSoporte(file);
+    form.append('file', fileToUpload);
+    try {
+      const res = await fetch('/api/soporte/upload', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error subiendo');
+      const url = data.url as string;
+      setMessages((m) => [...m, { role: 'user', text: tipoSoporte === 'mejora' ? 'Imagen de referencia adjunta' : 'Imagen del error adjunta', imageUrl: url }]);
+      const respuestasCompletas = [...soporteRespuestas, url];
+      setSoporteRespuestas(respuestasCompletas);
+      setSoportePasoPregunta(0);
+      respuestasParaTicketRef.current = respuestasCompletas;
+      setMessages((m) => [
+        ...m,
+        { role: 'bot', text: '¿Qué tan urgente es el problema? Elegí una opción:', action: 'elegir_prioridad' }
+      ]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: 'bot',
+          text: 'No pude subir la imagen. Intentá de nuevo o describí el error con texto.'
+        }
+      ]);
+    } finally {
+      setUploadingImagen(false);
+      fileInputRef.current && (fileInputRef.current.value = '');
+    }
   };
 
   const volverAlChat = () => {
@@ -676,13 +1018,22 @@ export default function AyudaPage() {
     setVista('home');
     setOpcionInicio(null);
     setCorreoUsuario(null);
+    setNombreUsuario(null);
+    setProyectoIdIdentificado(null);
+    setProyectoNombreIdentificado(null);
+    setProyectoLogoIdentificado(null);
     setPasoSoporte('email');
+    setTipoSoporte(null);
     setSoportePasoPregunta(0);
     setSoporteRespuestas([]);
     setMessages([]);
     setTicketCreado(null);
     setTicketDescripcion('');
     setTicketPrioridad('');
+    setChatId(null);
+    loadedChatIdRef.current = null;
+    lastPersistedCountRef.current = 0;
+    if (typeof window !== 'undefined') window.localStorage.removeItem(AYUDA_CHAT_STORAGE_KEY);
   };
 
   return (
@@ -710,9 +1061,14 @@ export default function AyudaPage() {
       )}
 
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        
+        {/* Mientras restauramos el chat guardado (ej. al "Volver al chat"), no mostrar home */}
+        {restaurandoChat && (
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
+            <p className="text-sm text-[var(--text-muted)]">Cargando conversación...</p>
+          </div>
+        )}
         {/* HOME del chat — foto grande + 3 opciones */}
-        {vista === 'home' && (
+        {!restaurandoChat && vista === 'home' && (
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
             <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden border-2 border-[var(--border)] mb-6 shrink-0">
               <Image
@@ -739,18 +1095,24 @@ export default function AyudaPage() {
               </button>
               <button
                 type="button"
-                onClick={() => entrarAlChat('cotizacion')}
-                className="w-full flex items-center justify-between px-5 py-4 rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors text-[var(--text)] text-left"
+                disabled
+                className="w-full flex items-center justify-between px-5 py-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 text-[var(--text-muted)] cursor-not-allowed opacity-75 text-left"
               >
-                <span>Cotización</span>
+                <span className="flex items-center gap-2">
+                  <span>Cotización</span>
+                  <span className="text-xs font-normal">En construcción</span>
+                </span>
                 <IconArrow />
               </button>
               <button
                 type="button"
-                onClick={() => entrarAlChat('mis_servicios')}
-                className="w-full flex items-center justify-between px-5 py-4 rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors text-[var(--text)] text-left"
+                disabled
+                className="w-full flex items-center justify-between px-5 py-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 text-[var(--text-muted)] cursor-not-allowed opacity-75 text-left"
               >
-                <span>Mis servicios</span>
+                <span className="flex items-center gap-2">
+                  <span>Mis servicios</span>
+                  <span className="text-xs font-normal">En construcción</span>
+                </span>
                 <IconArrow />
               </button>
             </div>
@@ -809,6 +1171,59 @@ export default function AyudaPage() {
                             <span className="text-xs font-medium text-[var(--text-muted)]">Tu tienda: {msg.storeName}</span>
                           </div>
                         )}
+                        {msg.action === 'elegir_soporte' && (
+                          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                            <button
+                              type="button"
+                              onClick={elegirErrorEnSistema}
+                              className="px-4 py-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-sm font-medium hover:bg-[var(--bg-secondary)] hover:border-[var(--text-muted)] transition-colors text-left"
+                            >
+                              Error en el sistema
+                            </button>
+                            <button
+                              type="button"
+                              onClick={elegirMejoraEnSistema}
+                              className="px-4 py-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-sm font-medium hover:bg-[var(--bg-secondary)] hover:border-[var(--text-muted)] transition-colors text-left"
+                            >
+                              Mejora en el sistema
+                            </button>
+                          </div>
+                        )}
+                        {msg.action === 'elegir_modulo' && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {MODULOS_PRINCIPALES.map((mod) => (
+                              <button
+                                key={mod}
+                                type="button"
+                                onClick={() => seleccionarModulo(mod)}
+                                className="px-4 py-2.5 rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-sm font-medium hover:bg-[var(--bg-secondary)] hover:border-[var(--text-muted)] transition-colors"
+                              >
+                                {mod}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {msg.action === 'elegir_prioridad' && (
+                          <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
+                            {PRIORIDADES.map((p) => {
+                              const Icon = p.Icon;
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => seleccionarPrioridad(p.id)}
+                                  className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-[var(--border)] bg-[var(--bg)] text-[var(--text)] text-sm font-medium hover:bg-[var(--bg-secondary)] hover:border-[var(--text-muted)] transition-colors text-left"
+                                >
+                                  <Icon />
+                                  <span className="flex flex-col items-start">
+                                    <span>{p.label}</span>
+                                    <span className="text-xs font-normal text-[var(--text-muted)]">{p.desc}</span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                         {msg.ticketId && (
                           <Link
                             href={`/ticket/${msg.ticketId}`}
@@ -819,6 +1234,30 @@ export default function AyudaPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </Link>
+                        )}
+                        {msg.ticketsExistentes && msg.ticketsExistentes.length > 0 && (
+                          <div className="mt-3 flex flex-col gap-2">
+                            {msg.ticketsExistentes.map((t) => (
+                              <Link
+                                key={t.id}
+                                href={`/ticket/${t.id}`}
+                                className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-[var(--text)] text-[var(--bg)] text-sm font-medium hover:opacity-90 transition-opacity w-full max-w-sm"
+                              >
+                                <span className="min-w-0 truncate text-left" title={t.titulo || undefined}>
+                                  {t.supportId && (
+                                    <span className="font-mono text-xs opacity-90 mr-1.5">{t.supportId}</span>
+                                  )}
+                                  {t.titulo || 'Ticket'}
+                                </span>
+                                <span className="shrink-0 flex items-center gap-1">
+                                  <span className="text-xs opacity-90">{t.estadoLabel}</span>
+                                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
                         )}
                         {msg.action === 'ticket' && !msg.ticketId && (
                           <button
@@ -851,7 +1290,12 @@ export default function AyudaPage() {
                     </div>
                   ) : (
                     <div key={i} className="flex justify-end">
-                      <div className="max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-2.5 bg-[var(--brand-cafe)]/20 border border-[var(--brand-cafe)]/40">
+                      <div className="max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-2.5 bg-[var(--brand-cafe)]/20 border border-[var(--brand-cafe)]/40 space-y-2">
+                        {msg.imageUrl && (
+                          <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--bg)]">
+                            <img src={msg.imageUrl} alt="Captura del error" className="max-h-48 w-full object-contain object-left-top" />
+                          </a>
+                        )}
                         <p className="text-sm text-[var(--text)]">{msg.text}</p>
                       </div>
                     </div>
@@ -888,22 +1332,59 @@ export default function AyudaPage() {
             <div className="shrink-0 flex-none px-4 sm:px-6 py-4 border-t border-[var(--border)] bg-[var(--bg)]">
                 <form
                   onSubmit={(e) => { e.preventDefault(); enviarMensaje(); }}
-                  className="max-w-2xl mx-auto flex gap-2"
+                  className="max-w-2xl mx-auto space-y-2"
                 >
                   <input
-                    type={opcionInicio === 'soporte' && pasoSoporte === 'email' ? 'email' : 'text'}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={opcionInicio === 'soporte' && pasoSoporte === 'email' ? 'tu@correo.com' : 'Escribí tu duda, pedido de soporte o cotización...'}
-                    className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] text-sm focus:outline-none focus:border-[var(--text-muted)]"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f && opcionInicio === 'soporte' && pasoSoporte === 'listo' && soportePasoPregunta === 3) subirImagenError(f);
+                    }}
                   />
-                  <button
-                    type="submit"
-                    disabled={!inputValue.trim() || typing}
-                    className="px-4 py-3 rounded-xl bg-[var(--brand-cafe)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                  >
-                    Enviar
-                  </button>
+                  <div className="flex gap-2">
+                    <input
+                      type={opcionInicio === 'soporte' && pasoSoporte === 'email' ? 'email' : 'text'}
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={opcionInicio === 'soporte' && pasoSoporte === 'email' ? 'Ingresá tu correo y te mostramos el estado de tus tickets' : opcionInicio === 'soporte' && pasoSoporte === 'listo' && soportePasoPregunta === 3 ? (tipoSoporte === 'mejora' ? 'O describí la mejora con texto...' : 'O describí el error con texto...') : 'Escribí tu duda o pedido de soporte...'}
+                      className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] text-sm focus:outline-none focus:border-[var(--text-muted)]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim() || typing}
+                      className="px-4 py-3 rounded-xl bg-[var(--brand-cafe)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                    >
+                      Enviar
+                    </button>
+                  </div>
+                  {opcionInicio === 'soporte' && pasoSoporte === 'listo' && soportePasoPregunta === 3 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={typing || uploadingImagen}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/50 text-[var(--text-muted)] hover:border-[var(--brand-cafe)]/50 hover:text-[var(--brand-cafe)] hover:bg-[var(--brand-cafe)]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingImagen ? (
+                        <>
+                          <svg className="w-5 h-5 animate-spin shrink-0" fill="none" viewBox="0 0 24 24" aria-hidden>
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span className="text-sm font-medium">Subiendo imagen...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-sm font-medium">{tipoSoporte === 'mejora' ? 'Subir imagen (referencia)' : 'Subir imagen del error'}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </form>
             </div>
           </div>
@@ -947,16 +1428,24 @@ export default function AyudaPage() {
                   <label className="block text-sm text-[var(--text-muted)] mb-2">
                     ¿Qué tan urgente es?
                   </label>
-                  <div className="flex flex-wrap gap-2">
-                    {PRIORIDADES.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setTicketPrioridad(p.id)}
-                        className="px-4 py-2 text-sm border border-[var(--border)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-[var(--text)]"
-                      >
-                        {p.label}
-                      </button>
-                    ))}
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+                    {PRIORIDADES.map((p) => {
+                      const Icon = p.Icon;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setTicketPrioridad(p.id)}
+                          className="flex items-center gap-2 px-4 py-3 text-sm border-2 border-[var(--border)] rounded-xl hover:bg-[var(--bg-secondary)] transition-colors text-[var(--text)] text-left"
+                        >
+                          <Icon />
+                          <span className="flex flex-col items-start">
+                            <span className="font-medium">{p.label}</span>
+                            <span className="text-xs text-[var(--text-muted)]">{p.desc}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

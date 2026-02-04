@@ -102,7 +102,21 @@ export async function GET() {
     }>;
     const configured = projectList.filter((p) => p.client_api_url && p.client_api_key);
     if (configured.length === 0) {
-      return NextResponse.json([]);
+      return NextResponse.json({ feed: [], project_logos: {} });
+    }
+
+    /** Logo del proyecto desde configuración (backstage). Si es URL absoluta se usa tal cual; si es relativa se resuelve con url_dominio. */
+    const projectLogoResolved = (proj: (typeof configured)[0]): string | null => {
+      const raw = proj.logo_url?.trim() || null;
+      if (!raw) return null;
+      if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+      const base = (proj.url_dominio || proj.client_api_url || '').toString().replace(/\/$/, '') || null;
+      return base ? `${base}${raw.startsWith('/') ? '' : '/'}${raw}` : raw;
+    };
+
+    const projectLogosMap: Record<string, string | null> = {};
+    for (const p of configured) {
+      projectLogosMap[p.id] = projectLogoResolved(p);
     }
 
     const projectIds = configured.map((p) => p.id);
@@ -161,7 +175,7 @@ export async function GET() {
       if (!proj) continue;
       const base = (proj.client_api_url || proj.url_dominio || '').toString().replace(/\/$/, '') || null;
       const projectStores = storesByProject[projectId] ?? [];
-      const projectLogoUrl = resolveUrl(proj.logo_url ?? null, base);
+      const projectLogoUrl = projectLogosMap[projectId] ?? null;
 
       for (const a of activities) {
         const storeId = a.store_id ?? null;
@@ -190,7 +204,7 @@ export async function GET() {
 
     feedItems.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     const feed = feedItems.slice(0, TOTAL_FEED_LIMIT);
-    return NextResponse.json(feed);
+    return NextResponse.json({ feed, project_logos: projectLogosMap });
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Failed to fetch activity feed';
     console.error('[backstage/activity-feed]', e);

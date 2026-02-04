@@ -12,9 +12,6 @@ const alegreya = Alegreya({
 export const metadata: Metadata = {
   title: "andres.backstage | Software a la medida",
   description: "Construyo la plataforma que tu marca necesita. Software a la medida, programado desde cero.",
-  icons: {
-    icon: "/andrew.jpg",
-  },
 };
 
 export default function RootLayout({

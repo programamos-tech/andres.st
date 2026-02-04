@@ -38,7 +38,7 @@ export default function TicketsPage() {
             <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
               Home
             </Link>
-            <Link href="/ayuda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
+            <Link href="/andrebot" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
               Chat
             </Link>
             <span className="text-sm font-medium">Mis Tickets</span>

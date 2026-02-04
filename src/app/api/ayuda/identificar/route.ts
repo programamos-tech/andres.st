@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     const { data: project, error: projectError } = await supabase
       .from('proyectos_maestros')
-      .select('nombre_proyecto, logo_url')
+      .select('id, nombre_proyecto, logo_url')
       .eq('id', user.project_id)
       .single();
 
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       found: true,
       nombre: nombreCapitalizado,
+      proyecto_id: (project.id as string) || null,
       proyecto_nombre: (project.nombre_proyecto as string) || 'Tu proyecto',
       logo_url: (project.logo_url as string) || null,
     });

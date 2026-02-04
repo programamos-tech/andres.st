@@ -41,7 +41,7 @@ export default function TicketDetailPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-semibold mb-2">Ticket no encontrado</h1>
-          <Link href="/ayuda" className="text-[var(--text-muted)] hover:text-[var(--text)]">
+          <Link href="/andrebot" className="text-[var(--text-muted)] hover:text-[var(--text)]">
             Volver a Ayuda
           </Link>
         </div>
@@ -59,7 +59,7 @@ export default function TicketDetailPage() {
             <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
               Home
             </Link>
-            <Link href="/ayuda" className="text-sm font-medium">
+            <Link href="/andrebot" className="text-sm font-medium">
               Ayuda
             </Link>
           </div>
@@ -69,7 +69,7 @@ export default function TicketDetailPage() {
       <main className="max-w-4xl mx-auto px-6 py-12">
         {/* Back */}
         <Link 
-          href="/ayuda" 
+          href="/andrebot" 
           className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] mb-6"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

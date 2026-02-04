@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 
 interface ProjectForBackstage {
   id: string;
@@ -436,7 +436,7 @@ export default function ProyectoDetallePage() {
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
         <div className="max-w-7xl mx-auto px-6">
-          <DashboardHeader showStats={false} onRefresh={fetchProject} contained />
+          <BackstageSubNav showStats={false} onRefresh={fetchProject} contained />
 
           <main className="py-8">
           {/* Header */}

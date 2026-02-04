@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
 
 interface Actividad {
@@ -43,7 +43,7 @@ export default function ActividadesPage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg-secondary)]">
-        <DashboardHeader 
+        <BackstageSubNav
           totalProyectos={6}
           proyectosActivos={5}
           proyectosConErrores={2}

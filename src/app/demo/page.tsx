@@ -22,7 +22,7 @@ export default function DemoClientApp() {
   ];
 
   // URL de ayuda con parámetros
-  const ayudaUrl = `/ayuda?proyecto=${usuario.proyecto}&usuario=${encodeURIComponent(usuario.nombre)}&email=${encodeURIComponent(usuario.email)}&modulo=${moduloActivo}&tienda=${encodeURIComponent(usuario.tienda)}`;
+  const ayudaUrl = `/andrebot?proyecto=${usuario.proyecto}&usuario=${encodeURIComponent(usuario.nombre)}&email=${encodeURIComponent(usuario.email)}&modulo=${moduloActivo}&tienda=${encodeURIComponent(usuario.tienda)}`;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">

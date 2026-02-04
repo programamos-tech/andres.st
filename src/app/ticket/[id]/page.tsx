@@ -7,11 +7,15 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
 import { HomeNav } from '@/components/HomeNav';
+import { TicketChat } from '@/components/ticket/TicketChat';
 import type { TicketEstado } from '@/types/database';
 
 interface TicketData {
   id: string;
+  numero?: number;
+  supportId?: string;
   proyecto_nombre: string;
+  proyecto_logo_url?: string | null;
   modulo: string;
   tienda: string;
   titulo: string;
@@ -19,9 +23,40 @@ interface TicketData {
   estado: TicketEstado;
   prioridad: string;
   creado_por_nombre: string;
+  creado_por_email?: string | null;
   created_at: string;
   updated_at: string;
   historial: { estado: TicketEstado; fecha: string; nota?: string }[];
+}
+
+/** Extrae la URL de imagen del resumen si existe (Imagen del error: url o Imagen (referencia): url). */
+function extraerImagenDeDescripcion(descripcion: string): string | null {
+  const match = descripcion.match(/Imagen\s*(?:del error|\(referencia\))\s*:\s*(https?:\/\/[^\s]+)/i);
+  return match ? match[1].trim() : null;
+}
+
+/** Quita la línea de la imagen del texto para no mostrar la URL en el ticket. */
+function descripcionSinLineaDeImagen(descripcion: string): string {
+  return descripcion
+    .replace(/\n*Imagen\s*(?:del error|\(referencia\))\s*:\s*https?:\/\/[^\s]+/gi, '')
+    .replace(/\n\n\n+/g, '\n\n')
+    .trim();
+}
+
+/** Parsea la descripción en bloques "Etiqueta: valor" para mostrar con jerarquía. "Pasos:" se muestra como "Descripción:". */
+function descripcionABloques(descripcion: string): { label: string; value: string }[] {
+  const sinImagen = descripcionSinLineaDeImagen(descripcion);
+  const bloques = sinImagen.split(/\n\n+/);
+  return bloques
+    .map((bloque) => {
+      const idx = bloque.indexOf(': ');
+      if (idx === -1) return { label: '', value: bloque.trim() };
+      let label = bloque.slice(0, idx).trim();
+      if (/^Pasos$/i.test(label)) label = 'Descripción';
+      const value = bloque.slice(idx + 2).trim();
+      return { label, value };
+    })
+    .filter((b) => b.value.length > 0);
 }
 
 // Iconos por estado para que el usuario vea en qué etapa está
@@ -65,6 +100,20 @@ const ESTADOS: { id: TicketEstado; label: string; Icon: React.FC }[] = [
   { id: 'desplegando', label: 'Desplegando', Icon: IconDesplegando },
   { id: 'resuelto', label: 'Resuelto', Icon: IconResuelto }
 ];
+
+const PRIORIDAD_LABEL: Record<string, string> = {
+  urgente: 'Urgente',
+  alto_espera: 'Alto (puede esperar)',
+  alto_maromas: 'Alto (maromas)',
+  medio: 'Medio',
+};
+
+const PRIORIDAD_STYLES: Record<string, string> = {
+  urgente: 'bg-red-600 text-white border-red-700 shadow-sm',
+  alto_espera: 'bg-amber-500 text-white border-amber-600 shadow-sm',
+  alto_maromas: 'bg-orange-500 text-white border-orange-600 shadow-sm',
+  medio: 'bg-[var(--text-muted)]/20 text-[var(--text)] border-[var(--border)]',
+};
 
 const RAZONES_CANCELAR = [
   { id: 'resuelto_solo', label: 'Ya lo resolví yo mismo' },
@@ -182,7 +231,7 @@ export default function TicketPage() {
         <p className="text-[var(--text-muted)] mb-6 text-center">
           Este ticket no existe o el link es incorrecto.
         </p>
-        <Link href="/ayuda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)]">
+        <Link href="/andrebot" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)]">
           Ir a Ayuda
         </Link>
       </div>
@@ -191,31 +240,29 @@ export default function TicketPage() {
 
   const estadoActualIndex = ESTADOS.findIndex(e => e.id === ticket.estado);
   const progreso = ((estadoActualIndex + 1) / ESTADOS.length) * 100;
+  const imagenAdjuntaUrl = extraerImagenDeDescripcion(ticket.descripcion);
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <HomeNav />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
-        {/* Back */}
-        <Link 
-          href="/ayuda" 
-          className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] mb-6 transition-colors"
-        >
-          <IconBack />
-          <span>Volver al chat</span>
-        </Link>
-
-        {/* Copiar link para ver estado + ID */}
-        <div className="mb-6 p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
-          <p className="text-xs text-[var(--text-muted)] mb-2">
-            Copiá el link para ver en qué estado está cuando quieras.
-          </p>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <span className="text-xs font-mono text-[var(--text-muted)] truncate">{ticket.id}</span>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 lg:py-8">
+        {/* Top: back + copy link en una sola línea */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <Link
+            href="/andrebot"
+            className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors order-2 sm:order-1"
+          >
+            <IconBack />
+            <span>Volver al chat</span>
+          </Link>
+          <div className="flex items-center gap-3 flex-wrap order-1 sm:order-2">
+            <span className="text-base font-mono font-semibold text-[var(--text)]">
+              {ticket.supportId || `#${ticket.numero ?? ''}`}
+            </span>
             <button
               onClick={copiarLink}
-              className="flex items-center gap-2 text-sm text-[var(--text)] hover:opacity-80 transition-opacity shrink-0"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm text-[var(--text)] hover:bg-[var(--bg-secondary)] transition-colors"
             >
               <IconCopy />
               <span>{copiado ? '¡Copiado!' : 'Copiar link'}</span>
@@ -232,138 +279,276 @@ export default function TicketPage() {
           </div>
         )}
 
-        {/* Card principal */}
+        {/* Card principal: 2 columnas en desktop */}
         {!cancelado && (
-          <div className="rounded-xl border border-[var(--border)] overflow-hidden">
-            {/* Header */}
-            <div className="p-6 border-b border-[var(--border)]">
-              <h1 className="text-lg font-semibold text-[var(--text)] mb-2">{ticket.titulo}</h1>
-              <p className="text-sm text-[var(--text-muted)] mb-3">
-                Solicitado por: <span className="text-[var(--text)] font-medium">{ticket.creado_por_nombre}</span>
-              </p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
-                <span className="uppercase">{ticket.proyecto_nombre}</span>
-                <span>·</span>
-                <span>{ticket.modulo}</span>
-                {ticket.tienda && (
-                  <>
-                    <span>·</span>
-                    <span>{ticket.tienda}</span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Progreso */}
-            <div className="p-6 border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-              <div className="flex items-center justify-between mb-4">
-                {ESTADOS.map((estado, index) => {
-                  const completado = index <= estadoActualIndex;
-                  const activo = index === estadoActualIndex;
-                  const EstadoIcon = estado.Icon;
-                  return (
-                    <div key={estado.id} className="flex flex-col items-center flex-1">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors ${
-                        completado 
-                          ? 'bg-[var(--text)] border-[var(--text)] text-[var(--bg)]' 
-                          : 'border-[var(--border)] text-[var(--text-muted)]'
-                      }`}>
-                        <EstadoIcon />
-                      </div>
-                      <span className={`text-[10px] mt-2 text-center ${
-                        activo ? 'text-[var(--text)] font-medium' : 'text-[var(--text-muted)]'
-                      }`}>
-                        {estado.label}
-                      </span>
+          <div className="rounded-xl border border-[var(--border)] overflow-hidden flex flex-col lg:flex-row">
+            {/* Columna izquierda: metadata + historial + cancelar */}
+            <aside className="lg:w-72 xl:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-[var(--border)] bg-[var(--bg-secondary)]/50">
+              <div className="p-4 lg:p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  {ticket.proyecto_logo_url ? (
+                    <div className="w-14 h-14 rounded-full border border-[var(--border)] overflow-hidden bg-[var(--bg)] shrink-0">
+                      <img
+                        src={ticket.proyecto_logo_url}
+                        alt={ticket.proyecto_nombre || 'Proyecto'}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                  );
-                })}
-              </div>
-              <div className="h-1 bg-[var(--border)] rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[var(--text)] transition-all duration-700"
-                  style={{ width: `${progreso}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Resumen de la conversación (chat con Andrebot) */}
-            <div className="p-6 border-b border-[var(--border)]">
-              <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-3">
-                Resumen de la conversación (chat con Andrebot)
-              </h2>
-              <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{ticket.descripcion}</p>
-            </div>
-
-            {/* Historial */}
-            <div className="p-6 border-b border-[var(--border)]">
-              <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-4">
-                Historial
-              </h2>
-              <div className="space-y-3">
-                {ticket.historial.map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center flex-shrink-0">
-                      <IconClock />
+                  ) : (
+                    <div
+                      className="w-14 h-14 rounded-full border border-[var(--border)] bg-[var(--bg)] flex items-center justify-center shrink-0 text-lg font-semibold uppercase text-[var(--text-muted)]"
+                      title={ticket.proyecto_nombre || 'Por identificar'}
+                    >
+                      {(ticket.proyecto_nombre || 'PI').trim().slice(0, 2)}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[var(--text)]">
-                        {ESTADOS.find(e => e.id === item.estado)?.label}
-                      </p>
-                      {item.nota && (
-                        <p className="text-xs text-[var(--text-muted)] mt-0.5">{item.nota}</p>
-                      )}
-                      <p className="text-xs text-[var(--text-muted)] mt-1">
-                        {format(new Date(item.fecha), "d 'de' MMMM, HH:mm", { locale: es })}
-                      </p>
-                    </div>
+                  )}
+                  <span className="text-sm font-semibold uppercase text-[var(--text)] truncate lg:hidden">
+                    {ticket.proyecto_nombre || 'Por identificar'}
+                  </span>
+                </div>
+                <dl className="space-y-4">
+                  <div>
+                    <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                      Proyecto
+                    </dt>
+                    <dd className="text-base font-semibold text-[var(--text)] uppercase tracking-wide">
+                      {ticket.proyecto_nombre || 'Por identificar'}
+                    </dd>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div>
+                    <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                      Módulo
+                    </dt>
+                    <dd className="text-sm font-medium text-[var(--text)]">
+                      {ticket.modulo}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                      Urgencia
+                    </dt>
+                    <dd>
+                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border ${PRIORIDAD_STYLES[ticket.prioridad || 'medio'] || PRIORIDAD_STYLES.medio}`}>
+                        {PRIORIDAD_LABEL[ticket.prioridad || 'medio'] || ticket.prioridad || 'Medio'}
+                      </span>
+                    </dd>
+                  </div>
+                  {ticket.tienda && (
+                    <div>
+                      <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                        Tienda
+                      </dt>
+                      <dd className="text-sm text-[var(--text)]">
+                        {ticket.tienda}
+                      </dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                      Solicitado por
+                    </dt>
+                    <dd className="text-sm font-medium text-[var(--text)]">
+                      {ticket.creado_por_nombre}
+                    </dd>
+                  </div>
+                  {ticket.creado_por_email && (
+                    <div>
+                      <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                        Correo
+                      </dt>
+                      <dd className="text-sm">
+                        <a href={`mailto:${ticket.creado_por_email}`} className="text-[var(--text)] font-medium hover:underline break-all">
+                          {ticket.creado_por_email}
+                        </a>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
 
-            {/* Acciones */}
-            <div className="p-6">
-              {!mostrarCancelar ? (
-                <button
-                  onClick={() => setMostrarCancelar(true)}
-                  className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
-                >
-                  <IconX />
-                  <span>Cancelar solicitud</span>
-                </button>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-[var(--text)]">¿Por qué quieres cancelar?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {RAZONES_CANCELAR.map((razon) => (
+                <h2 className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest mt-6 mb-3 pb-2 border-b border-[var(--border)]">
+                  Historial
+                </h2>
+                <div className="space-y-3">
+                  {ticket.historial.map((item, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <span className="text-[var(--text-muted)] shrink-0 mt-0.5">
+                        <IconClock />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--text)]">
+                          {ESTADOS.find(e => e.id === item.estado)?.label}
+                        </p>
+                        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                          {format(new Date(item.fecha), "d MMM, HH:mm", { locale: es })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-[var(--border)]">
+                  {!mostrarCancelar ? (
+                    <button
+                      onClick={() => setMostrarCancelar(true)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border border-[var(--status-error)] text-[var(--status-error)] bg-[var(--status-error)]/5 hover:bg-[var(--status-error)]/15 transition-colors"
+                    >
+                      <IconX />
+                      <span>Cancelar solicitud</span>
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-[var(--text)]">¿Por qué cancelar?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {RAZONES_CANCELAR.map((razon) => (
+                          <button
+                            key={razon.id}
+                            onClick={() => cancelarTicket(razon.id)}
+                            className="px-3 py-1.5 text-xs border border-[var(--border)] rounded-lg hover:bg-[var(--bg)] transition-colors text-[var(--text)]"
+                          >
+                            {razon.label}
+                          </button>
+                        ))}
+                      </div>
                       <button
-                        key={razon.id}
-                        onClick={() => cancelarTicket(razon.id)}
-                        className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-[var(--text)]"
+                        onClick={() => setMostrarCancelar(false)}
+                        className="text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
                       >
-                        {razon.label}
+                        No, mantener ticket
                       </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </aside>
+
+            {/* Columna derecha: título, progreso, resumen */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <div className="p-4 sm:p-5 lg:p-6 border-b border-[var(--border)]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-semibold text-[var(--text)] leading-tight">
+                    {ticket.titulo.replace(/\s*·\s*Por identificar\s*$/i, (match) => {
+                      const proy = ticket.proyecto_nombre?.trim();
+                      if (proy && !/^por\s+identificar$/i.test(proy)) {
+                        return ` · ${proy}`;
+                      }
+                      return match;
+                    })}
+                  </h1>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${PRIORIDAD_STYLES[ticket.prioridad || 'medio'] || PRIORIDAD_STYLES.medio}`}
+                    title="Urgencia del ticket"
+                  >
+                    Urgencia: {PRIORIDAD_LABEL[ticket.prioridad || 'medio'] || ticket.prioridad || 'Medio'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Barra de estados */}
+              <div className="p-4 sm:p-5 lg:p-6 border-b border-[var(--border)] bg-[var(--bg-secondary)]/30">
+                <div className="flex items-center justify-between gap-1 mb-3">
+                  {ESTADOS.map((estado, index) => {
+                    const completado = index <= estadoActualIndex;
+                    const activo = index === estadoActualIndex;
+                    const EstadoIcon = estado.Icon;
+                    return (
+                      <div key={estado.id} className="flex flex-col items-center flex-1 min-w-0">
+                        <div
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 transition-colors shrink-0 ${
+                            completado
+                              ? 'bg-[var(--text)] border-[var(--text)] text-[var(--bg)]'
+                              : 'border-[var(--border)] text-[var(--text-muted)]'
+                          }`}
+                        >
+                          <EstadoIcon />
+                        </div>
+                        <span
+                          className={`text-[10px] sm:text-xs mt-1.5 text-center truncate w-full ${
+                            activo ? 'text-[var(--text)] font-medium' : 'text-[var(--text-muted)]'
+                          }`}
+                        >
+                          {estado.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Línea con puntos que se oscurecen según el paso */}
+                <div className="flex items-center w-full">
+                  {ESTADOS.map((estado, index) => {
+                    const alcanzado = estadoActualIndex >= index;
+                    const segmentoAlcanzado = estadoActualIndex > index;
+                    return (
+                      <div
+                        key={estado.id}
+                        className="flex items-center flex-1 min-w-0 last:flex-none last:w-auto"
+                      >
+                        <div
+                          className={`shrink-0 w-2 h-2 rounded-full transition-colors duration-300 ${
+                            alcanzado ? 'bg-[var(--text)]' : 'bg-[var(--border)]'
+                          }`}
+                        />
+                        {index < ESTADOS.length - 1 && (
+                          <div
+                            className={`flex-1 h-0.5 mx-0.5 min-w-[8px] rounded-full transition-colors duration-300 ${
+                              segmentoAlcanzado ? 'bg-[var(--text)]' : 'bg-[var(--border)]'
+                            }`}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Resumen de la conversación */}
+              <div className="p-4 sm:p-5 lg:p-6 flex-1 min-h-0">
+                <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-3">
+                  Resumen de la conversación (chat con Andrebot)
+                </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                  {imagenAdjuntaUrl && (
+                    <div className="rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--bg-secondary)] shrink-0">
+                      <a href={imagenAdjuntaUrl} target="_blank" rel="noopener noreferrer" className="block">
+                        <img
+                          src={imagenAdjuntaUrl}
+                          alt="Imagen adjunta"
+                          className="w-full h-auto max-h-64 object-contain object-left-top"
+                        />
+                      </a>
+                    </div>
+                  )}
+                  <div className="min-w-0 space-y-4">
+                    {descripcionABloques(ticket.descripcion).map((bloque, index) => (
+                      <div key={index}>
+                        {bloque.label ? (
+                          <>
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-0.5">
+                              {bloque.label}
+                            </p>
+                            <p className={`text-[var(--text)] whitespace-pre-wrap leading-relaxed ${index === 0 ? 'text-base font-semibold' : 'text-sm'}`}>
+                              {bloque.value}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{bloque.value}</p>
+                        )}
+                      </div>
                     ))}
                   </div>
-                  <button
-                    onClick={() => setMostrarCancelar(false)}
-                    className="text-sm text-[var(--text-muted)] hover:text-[var(--text)]"
-                  >
-                    No, mantener ticket
-                  </button>
                 </div>
-              )}
+
+                <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                  <TicketChat
+                    ticketId={ticket.id}
+                    defaultAutorNombre={ticket.creado_por_nombre}
+                    esAdmin={false}
+                    puedeEnviar={true}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}
-
-        {/* Info */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-[var(--text-muted)]">
-            ¿Necesitas ayuda urgente? WhatsApp +57 300 206 1711
-          </p>
-        </div>
       </main>
     </div>
   );

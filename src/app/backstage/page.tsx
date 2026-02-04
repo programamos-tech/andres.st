@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useProyectos } from '@/lib/hooks/useProyectos';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import { ProyectoCard } from '@/components/dashboard/ProyectoCard';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
@@ -15,34 +15,12 @@ import type { TicketEstado } from '@/types/database';
 interface TicketPreview {
   id: string;
   numero: number;
+  supportId?: string;
   titulo: string;
   proyecto_nombre: string;
   estado: TicketEstado;
-  prioridad: string;
   created_at: string;
 }
-
-// Mock tickets (en producción vendría de Supabase)
-const MOCK_TICKETS: TicketPreview[] = [
-  {
-    id: 'tk_hdzqt2hmkrwk',
-    numero: 101,
-    titulo: 'El sistema se cierra al exportar PDF',
-    proyecto_nombre: 'ZonaT',
-    estado: 'replicando',
-    prioridad: 'alta',
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'tk_abc123xyz789',
-    numero: 102,
-    titulo: 'No puedo ajustar el stock',
-    proyecto_nombre: 'Aleya',
-    estado: 'creado',
-    prioridad: 'media',
-    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  }
-];
 
 const ESTADO_COLORS: Record<TicketEstado, string> = {
   creado: 'bg-[var(--text-muted)]',
@@ -83,6 +61,26 @@ export default function BackstageDashboard() {
   const errores = proyectos.filter(p => p.status_visual === 'error').length;
 
   const [healthByProjectId, setHealthByProjectId] = useState<Record<string, { status: 'active' | 'inactive'; latency_ms?: number | null }>>({});
+  const [ticketsList, setTicketsList] = useState<TicketPreview[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/backstage/tickets')
+      .then((res) => res.json())
+      .then((data: { tickets?: TicketPreview[] }) => {
+        if (!cancelled && Array.isArray(data.tickets)) {
+          setTicketsList(data.tickets);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setTicketsList([]);
+      })
+      .finally(() => {
+        if (!cancelled) setTicketsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const projectIds = proyectos.map((p) => p.id).sort().join(',');
   useEffect(() => {
@@ -106,7 +104,7 @@ export default function BackstageDashboard() {
     return () => controller.abort();
   }, [projectIds]);
 
-  const ticketsActivos = MOCK_TICKETS.filter(t => t.estado !== 'resuelto');
+  const ticketsActivos = ticketsList.filter(t => t.estado !== 'resuelto');
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +141,7 @@ export default function BackstageDashboard() {
   return (
     <BackstageGuard>
     <div className="min-h-screen bg-[var(--bg-secondary)]">
-      <DashboardHeader 
+      <BackstageSubNav
         totalProyectos={proyectos.length}
         proyectosActivos={activos}
         proyectosConErrores={errores}
@@ -152,42 +150,54 @@ export default function BackstageDashboard() {
       />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Tickets activos */}
-        {ticketsActivos.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-medium text-[var(--text-muted)]">
-                Tickets activos ({ticketsActivos.length})
-              </h2>
-              <Link 
-                href="/backstage/tickets" 
-                className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
-              >
-                Ver todos
-              </Link>
-            </div>
+        {/* Tickets (Andrebot) — todos por orden de llegada */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-[var(--text-muted)]">
+              Tickets (Andrebot) {ticketsLoading ? '' : `(${ticketsActivos.length} activos)`}
+            </h2>
+            <Link
+              href="/backstage/tickets"
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+            >
+              Ver todos
+            </Link>
+          </div>
+          {ticketsLoading ? (
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {ticketsActivos.map((ticket) => (
-                <Link
-                  key={ticket.id}
-                  href={`/backstage/tickets?selected=${ticket.id}`}
-                  className="flex-shrink-0 w-72 p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="text-xs font-mono text-[var(--text-muted)]">#{ticket.numero}</span>
-                    <span className={`w-2 h-2 rounded-full ${ESTADO_COLORS[ticket.estado]}`}></span>
-                  </div>
-                  <p className="text-sm font-medium text-[var(--text)] truncate mb-1">{ticket.titulo}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[var(--text-muted)] uppercase">{ticket.proyecto_nombre}</span>
-                    <span className="text-xs text-[var(--text-muted)]">
-                      {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: es })}
-                    </span>
-                  </div>
-                </Link>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex-shrink-0 w-72 p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] animate-pulse h-24" />
               ))}
-              
-              {/* Card para ver todos */}
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {ticketsActivos.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)] py-4">
+                  {ticketsList.length === 0 ? 'Aún no hay tickets creados desde Andrebot.' : 'No hay tickets activos (todos están resueltos).'}
+                </p>
+              ) : (
+                ticketsActivos.map((ticket) => (
+                  <Link
+                    key={ticket.id}
+                    href={`/backstage/ticket/${ticket.id}`}
+                    className="flex-shrink-0 w-72 p-4 rounded-xl bg-[var(--bg)] border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <span className="text-xs font-mono text-[var(--text-muted)]">
+                        {ticket.supportId ?? `#${ticket.numero}`}
+                      </span>
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${ESTADO_COLORS[ticket.estado]}`} />
+                    </div>
+                    <p className="text-sm font-medium text-[var(--text)] truncate mb-1">{ticket.titulo}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-[var(--text-muted)] uppercase truncate">{ticket.proyecto_nombre}</span>
+                      <span className="text-xs text-[var(--text-muted)] shrink-0">
+                        {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: es })}
+                      </span>
+                    </div>
+                  </Link>
+                ))
+              )}
               <Link
                 href="/backstage/tickets"
                 className="flex-shrink-0 w-32 p-4 rounded-xl border border-dashed border-[var(--border)] hover:border-[var(--text-muted)] transition-colors flex flex-col items-center justify-center gap-2 text-[var(--text-muted)] hover:text-[var(--text)]"
@@ -196,8 +206,8 @@ export default function BackstageDashboard() {
                 <span className="text-xs">Ver más</span>
               </Link>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -225,7 +235,16 @@ export default function BackstageDashboard() {
             </div>
             <div>
               <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Actividad</h2>
-              <ActivityFeed />
+              <ActivityFeed
+                projectLogos={proyectos.reduce(
+                  (acc, p) => {
+                    const logo = p.logo_url?.trim() || null;
+                    const isZonat = p.nombre_cliente === 'ZonaT' || p.nombre_proyecto?.toLowerCase().includes('zonat');
+                    return { ...acc, [p.id]: logo || (isZonat ? '/zonat.png' : null) };
+                  },
+                  {} as Record<string, string | null>
+                )}
+              />
             </div>
           </div>
         )}

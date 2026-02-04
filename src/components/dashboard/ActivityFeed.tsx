@@ -6,6 +6,25 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { MOCK_ACTIVIDADES } from '@/lib/mock-data';
 
+function ActivityAvatar({ logoUrl, initialLetter }: { logoUrl: string | null; initialLetter: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const useLetter = !logoUrl || imgFailed;
+  return (
+    <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center">
+      {useLetter ? (
+        <span className="text-xs font-semibold text-[var(--text-muted)]">{initialLetter}</span>
+      ) : (
+        <img
+          src={logoUrl}
+          alt=""
+          className="w-full h-full object-cover object-center"
+          onError={() => setImgFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
 export interface ActivityFeedItem {
   id: string;
   usuario_nombre: string;
@@ -34,8 +53,14 @@ interface ActividadConProyecto {
   proyectos_maestros?: { nombre_proyecto: string };
 }
 
-export function ActivityFeed() {
+/** Mapa proyecto_id -> logo_url para usar cuando la API del cliente no trae logo (fallback desde configuración backstage) */
+export interface ActivityFeedProps {
+  projectLogos?: Record<string, string | null>;
+}
+
+export function ActivityFeed({ projectLogos }: ActivityFeedProps = {}) {
   const [actividades, setActividades] = useState<ActivityFeedItem[]>([]);
+  const [projectLogosFromApi, setProjectLogosFromApi] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,8 +69,13 @@ export function ActivityFeed() {
         const res = await fetch('/api/backstage/activity-feed');
         if (res.ok) {
           const data = await res.json();
-          const list = Array.isArray(data) ? data : [];
-          setActividades(list.length > 0 ? list : mockToFeedItems(MOCK_ACTIVIDADES as ActividadConProyecto[]));
+          if (data && typeof data === 'object' && Array.isArray(data.feed)) {
+            setActividades(data.feed.length > 0 ? data.feed : mockToFeedItems(MOCK_ACTIVIDADES as ActividadConProyecto[]));
+            setProjectLogosFromApi(typeof data.project_logos === 'object' && data.project_logos ? data.project_logos : {});
+          } else {
+            const list = Array.isArray(data) ? data : [];
+            setActividades(list.length > 0 ? list : mockToFeedItems(MOCK_ACTIVIDADES as ActividadConProyecto[]));
+          }
         } else {
           setActividades(mockToFeedItems(MOCK_ACTIVIDADES as ActividadConProyecto[]));
         }
@@ -95,20 +125,15 @@ export function ActivityFeed() {
               </p>
             )}
             {actividades.map((a) => {
-              const logoUrl = a.store_logo_url || a.logo_url;
+              // Prioridad: logo del proyecto (el que subiste en configuración) → logo de la tienda
+              const projectLogo = a.logo_url || (a.proyecto_id && (projectLogosFromApi[a.proyecto_id] ?? projectLogos?.[a.proyecto_id])) || null;
+              const logoUrl = projectLogo || a.store_logo_url || null;
               const contextLine = a.nombre_proyecto;
+              const initialLetter = (a.store_name || a.nombre_proyecto).charAt(0).toUpperCase();
               const rowClass = `flex items-start gap-3 px-4 py-3 border-b border-[var(--border)] last:border-0 ${a.proyecto_id ? 'hover:bg-[var(--bg-secondary)]/50 transition-colors' : ''} ${a.es_error ? 'bg-[var(--status-error)]/10' : ''}`;
               const content = (
                 <>
-                  <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt="" className="w-full h-full object-cover object-center" />
-                    ) : (
-                      <span className="text-xs font-semibold text-[var(--text-muted)]">
-                        {(a.store_name || a.nombre_proyecto).charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <ActivityAvatar logoUrl={logoUrl} initialLetter={initialLetter} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-[var(--text)] line-clamp-2" title={a.accion_realizada + (a.modulo_visitado ? ` en ${a.modulo_visitado}` : '')}>
                       {a.accion_realizada}{a.modulo_visitado ? ` en ${a.modulo_visitado}` : ''}
