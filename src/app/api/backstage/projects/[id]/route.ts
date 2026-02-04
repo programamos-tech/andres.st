@@ -74,7 +74,7 @@ export async function GET(
 
 /**
  * PATCH /api/backstage/projects/[id]
- * Body: { nombre_cliente?: string, nombre_proyecto?: string, client_api_url?: string, client_api_key?: string }
+ * Body: { nombre_cliente?: string, nombre_proyecto?: string, client_api_url?: string, client_api_key?: string, logo_url?: string | null }
  * Empty string for client_api_key means "do not change" (keep current).
  */
 export async function PATCH(
@@ -88,6 +88,11 @@ export async function PATCH(
     const nombre_proyecto = typeof body.nombre_proyecto === 'string' ? body.nombre_proyecto.trim() || null : undefined;
     const client_api_url = typeof body.client_api_url === 'string' ? body.client_api_url.trim() || null : undefined;
     const client_api_key = typeof body.client_api_key === 'string' ? body.client_api_key : undefined;
+    const logo_url = body.logo_url === null || (typeof body.logo_url === 'string' && body.logo_url.trim() === '')
+      ? null
+      : typeof body.logo_url === 'string'
+        ? body.logo_url.trim() || null
+        : undefined;
 
     const supabase = getSupabase();
 
@@ -97,6 +102,7 @@ export async function PATCH(
     if (client_api_url !== undefined) payload.client_api_url = client_api_url;
     // Only update key when a non-empty value is sent; empty string = do not change
     if (client_api_key !== undefined && client_api_key !== '') payload.client_api_key = client_api_key;
+    if (logo_url !== undefined) payload.logo_url = logo_url;
 
     const { data, error } = await supabase
       .from('proyectos_maestros')

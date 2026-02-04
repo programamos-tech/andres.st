@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -121,6 +121,10 @@ export default function ProyectoDetallePage() {
   const [healthHistory, setHealthHistory] = useState<{ id: string; checked_at: string; status: string; latency_ms: number | null }[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle');
+  const [logoUploadStatus, setLogoUploadStatus] = useState<'idle' | 'uploading' | 'saved' | 'error'>('idle');
+  const [logoUploadMessage, setLogoUploadMessage] = useState('');
+  const [logoRemoveStatus, setLogoRemoveStatus] = useState<'idle' | 'removing' | 'error'>('idle');
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchProject = useCallback(async () => {
     if (!proyectoId) return;
@@ -328,6 +332,62 @@ export default function ProyectoDetallePage() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !proyectoId) return;
+    e.target.value = '';
+    setLogoUploadMessage('');
+    setLogoUploadStatus('uploading');
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const res = await fetch(`/api/backstage/projects/${proyectoId}/logo`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLogoUploadMessage(data.error ?? 'Error al subir');
+        setLogoUploadStatus('error');
+        setTimeout(() => setLogoUploadStatus('idle'), 3000);
+        return;
+      }
+      setLogoUploadStatus('saved');
+      await fetchProject();
+      setTimeout(() => setLogoUploadStatus('idle'), 2000);
+    } catch {
+      setLogoUploadMessage('Error al subir el logo');
+      setLogoUploadStatus('error');
+      setTimeout(() => setLogoUploadStatus('idle'), 3000);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!proyectoId) return;
+    setLogoRemoveStatus('removing');
+    setLogoUploadMessage('');
+    try {
+      const res = await fetch(`/api/backstage/projects/${proyectoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logo_url: null }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setLogoUploadMessage(err.error ?? 'Error al quitar el logo');
+        setLogoRemoveStatus('error');
+        setTimeout(() => setLogoRemoveStatus('idle'), 3000);
+        return;
+      }
+      setLogoRemoveStatus('idle');
+      await fetchProject();
+    } catch {
+      setLogoUploadMessage('Error al quitar el logo');
+      setLogoRemoveStatus('error');
+      setTimeout(() => setLogoRemoveStatus('idle'), 3000);
+    }
+  };
+
   if (loading) {
     return (
       <BackstageGuard>
@@ -368,7 +428,8 @@ export default function ProyectoDetallePage() {
     })() ??
     stores[0] ??
     null;
-  const rawHeaderLogo = (mainStore?.logo_url ?? project.logo_url) || null;
+  // Priorizar logo del proyecto (subido en Config o desde sync); si no hay, usar logo de la microtienda principal
+  const rawHeaderLogo = (project.logo_url?.trim() || mainStore?.logo_url?.trim()) || null;
   const headerLogoUrl = rawHeaderLogo ? resolveLogoUrl(rawHeaderLogo) : null;
 
   return (
@@ -451,7 +512,7 @@ export default function ProyectoDetallePage() {
                     {stores.map((s) => {
                       const isSelected = selectedStoreId === s.external_id;
                       const storeName = s.name ?? s.external_id;
-                      const storeLogoUrl = resolveLogoUrl(s.logo_url || project.logo_url);
+                      const storeLogoUrl = resolveLogoUrl(project.logo_url || s.logo_url);
                       return (
                         <button
                           key={s.id}
@@ -622,7 +683,7 @@ export default function ProyectoDetallePage() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {stores.map((s) => {
-                      const storeLogoUrl = resolveLogoUrl(s.logo_url || project.logo_url);
+                      const storeLogoUrl = resolveLogoUrl(project.logo_url || s.logo_url);
                       return (
                       <div
                         key={s.id}
@@ -721,6 +782,58 @@ export default function ProyectoDetallePage() {
                 >
                   {configSaveStatus === 'saving' ? 'Guardando...' : configSaveStatus === 'saved' ? 'Guardado' : configSaveStatus === 'error' ? 'Error' : 'Guardar'}
                 </button>
+              </div>
+
+              <div className="mt-10 pt-8 border-t border-[var(--border)]">
+                <h2 className="text-sm font-medium text-[var(--text-muted)] mb-2">Logo del proyecto</h2>
+                <p className="text-sm text-[var(--text-muted)] mb-4">
+                  Si el proyecto no trae logo desde la app del cliente, puedes subir uno aquí. Se usará en el dashboard y en el feed de actividades.
+                </p>
+                <div className="flex flex-wrap items-center gap-4">
+                  {project.logo_url ? (
+                    <div className="w-16 h-16 rounded-full overflow-hidden border border-[var(--border)] bg-[var(--bg)] shrink-0">
+                      <img
+                        src={project.logo_url.startsWith('http') ? project.logo_url : resolveLogoUrl(project.logo_url) ?? project.logo_url}
+                        alt="Logo"
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-full border border-dashed border-[var(--border)] bg-[var(--bg-secondary)] shrink-0 flex items-center justify-center text-[var(--text-muted)] text-xs">
+                      Sin logo
+                    </div>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={logoFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                      className="hidden"
+                      onChange={handleLogoUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => logoFileInputRef.current?.click()}
+                      disabled={logoUploadStatus === 'uploading'}
+                      className="px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] hover:bg-[var(--bg-secondary)] disabled:opacity-50 transition-colors text-sm font-medium"
+                    >
+                      {logoUploadStatus === 'uploading' ? 'Subiendo...' : logoUploadStatus === 'saved' ? 'Subido' : logoUploadStatus === 'error' ? 'Error' : 'Subir logo'}
+                    </button>
+                    {project.logo_url && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        disabled={logoRemoveStatus === 'removing'}
+                        className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-secondary)] disabled:opacity-50 transition-colors text-sm font-medium"
+                      >
+                        {logoRemoveStatus === 'removing' ? 'Quitando...' : 'Quitar logo'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {logoUploadMessage && (
+                  <p className="mt-2 text-sm text-[var(--status-error)]">{logoUploadMessage}</p>
+                )}
               </div>
 
               <div className="mt-10 pt-8 border-t border-[var(--border)]">
