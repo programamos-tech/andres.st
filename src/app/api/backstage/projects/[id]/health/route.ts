@@ -71,11 +71,10 @@ export async function GET(
       }
     }
 
-    supabase
+    void supabase
       .from('project_health_checks')
       .insert({ project_id: id, status, latency_ms })
-      .then(() => {})
-      .catch((err) => console.error('[health] insert history failed', err));
+      .then(() => {}, (err) => console.error('[health] insert history failed', err));
 
     return NextResponse.json({
       status,
