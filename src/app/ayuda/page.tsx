@@ -536,10 +536,11 @@ export default function AyudaPage() {
       };
       const respuestasCompletas = [...soporteRespuestas, texto];
       if (siguientePaso <= 3) {
+        const paso = siguientePaso as 1 | 2 | 3;
         setTimeout(() => {
           setTyping(false);
-          setSoportePasoPregunta(siguientePaso);
-          setMessages((m) => [...m, { role: 'bot', text: preguntas[siguientePaso as 1 | 2 | 3] }]);
+          setSoportePasoPregunta(paso);
+          setMessages((m) => [...m, { role: 'bot', text: preguntas[paso] }]);
         }, 600 + Math.random() * 300);
       } else {
         setSoportePasoPregunta(0);
