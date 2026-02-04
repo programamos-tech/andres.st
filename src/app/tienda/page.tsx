@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
+import { HomeNav } from '@/components/HomeNav';
+import { AndrebotChat } from '@/components/andrebot/AndrebotChat';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { PreviewSimulation } from '@/components/tienda/PreviewSimulation';
 import {
@@ -18,6 +20,7 @@ export default function TiendaPage() {
   const [tipoActivo, setTipoActivo] = useState<TipoProducto | 'todos'>('todos');
   const [solicitudes, setSolicitudes] = useState<string[]>([]);
   const [panelAbierto, setPanelAbierto] = useState(false);
+  const [panelVista, setPanelVista] = useState<'lista' | 'chat'>('lista');
 
   useEffect(() => {
     setSolicitudes(getSolicitudesFromStorage());
@@ -40,68 +43,40 @@ export default function TiendaPage() {
 
   const enSolicitudes = (id: string) => solicitudes.includes(id);
 
+  const solicitudesButton = (
+    <button
+      type="button"
+      onClick={() => setPanelAbierto(true)}
+      className="relative w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--brand-cafe)] transition-colors shrink-0"
+      aria-label="Ver solicitudes"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      </svg>
+      {solicitudes.length > 0 && (
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--brand-cafe)] text-white text-[10px] font-semibold flex items-center justify-center">
+          {solicitudes.length}
+        </span>
+      )}
+    </button>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 px-6 py-4 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]/50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="hero-heading hover:opacity-80 transition-opacity">
-            {BRAND.username}
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Home
-            </Link>
-            <Link href="/tienda" className="text-sm font-medium text-[var(--text)]">
-              Catálogo
-            </Link>
-            <Link href="/ayuda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Ayuda
-            </Link>
-            <Link href="/backstage" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Backstage
-            </Link>
-            <button
-              type="button"
-              onClick={() => setPanelAbierto(true)}
-              className="relative w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--brand-cafe)] transition-colors"
-              aria-label="Ver solicitudes"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              {solicitudes.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[var(--brand-cafe)] text-white text-[10px] font-semibold flex items-center justify-center">
-                  {solicitudes.length}
-                </span>
-              )}
-            </button>
-            <a
-              href={`https://wa.me/${BRAND.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--text)] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </nav>
+      <HomeNav extraAction={solicitudesButton} />
 
-      {/* Cabecera compacta: título y filtros con poco protagonismo */}
-      <section className="px-6 pt-6 pb-4 border-b border-[var(--border)]/60 bg-[var(--bg)]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Cabecera: título y filtros — ordenada en mobile */}
+      <section className="px-4 sm:px-6 pt-5 pb-5 sm:pt-6 sm:pb-4 border-b border-[var(--border)]/60 bg-[var(--bg)]">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 sm:gap-4">
           <div className="min-w-0">
-            <h1 className="hero-heading text-xl md:text-2xl text-[var(--brand-carbon)] tracking-tight truncate">
+            <h1 className="hero-heading text-2xl text-[var(--brand-carbon)] tracking-tight">
               Tienda de módulos
             </h1>
             <p className="text-[var(--brand-marron)] text-sm mt-0.5 hidden sm:block">
               Funcionalidades, integraciones y sistemas para tu software.
             </p>
           </div>
-          <div className="flex flex-wrap gap-1.5 items-center shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto sm:max-w-none">
             {(['todos', ...TIPOS.map((t) => t.id)] as const).map((key) => {
               const label = key === 'todos' ? 'Todos' : TIPOS.find((t) => t.id === key)?.label ?? '';
               const active = tipoActivo === key;
@@ -111,7 +86,7 @@ export default function TiendaPage() {
                   key={key}
                   type="button"
                   onClick={() => setTipoActivo(key)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? 'text-white' : 'text-[var(--brand-marron)] hover:text-[var(--brand-carbon)] bg-transparent hover:bg-[var(--brand-crema)]/60'}`}
+                  className={`px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-colors text-center ${active ? 'text-white' : 'text-[var(--brand-marron)] hover:text-[var(--brand-carbon)] bg-transparent hover:bg-[var(--brand-crema)]/60'}`}
                   style={active ? { background: activeBg } : undefined}
                 >
                   {label}
@@ -201,10 +176,17 @@ export default function TiendaPage() {
         <>
           <div
             className="fixed inset-0 bg-black/30 z-50"
-            onClick={() => setPanelAbierto(false)}
+            onClick={() => { setPanelAbierto(false); setPanelVista('lista'); }}
             aria-hidden
           />
           <div className="fixed top-0 right-0 w-full max-w-md h-full bg-[var(--bg)] border-l border-[var(--border)] shadow-[var(--shadow-mid)] z-50 flex flex-col">
+            {panelVista === 'chat' ? (
+              <AndrebotChat
+                solicitudes={solicitudes}
+                onClose={() => setPanelVista('lista')}
+              />
+            ) : (
+            <>
             <div className="p-6 border-b border-[var(--border)] flex items-center justify-between bg-[var(--brand-crema)]/30">
               <h2 className="hero-heading text-xl text-[var(--brand-carbon)]">
                 Mis solicitudes
@@ -262,15 +244,18 @@ export default function TiendaPage() {
             <div className="p-6 border-t border-[var(--border)]">
               <button
                 type="button"
-                className="btn btn-secondary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:!transform-none"
+                onClick={() => setPanelVista('chat')}
+                className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:!transform-none"
                 disabled={solicitudes.length === 0}
               >
-                Enviar solicitudes ({solicitudes.length})
+                Ir a Andrebot ({solicitudes.length})
               </button>
               <p className="text-xs text-[var(--brand-marron)] mt-2 text-center">
-                Al enviar se creará una solicitud con estos ítems. El backend se conectará después.
+                Andrebot te pide proyecto y nombre, crea el ticket y te da el link para seguir el estado.
               </p>
             </div>
+            </>
+            )}
           </div>
         </>
       )}
@@ -330,17 +315,17 @@ export default function TiendaPage() {
             </div>
           </div>
           <div className="pt-10 border-t border-[var(--border)]">
-            <div className="marca-fullview flex items-center justify-center px-6 pt-0 pb-0 mt-0 mb-0">
-              <p className="hero-heading text-center text-[var(--brand-carbon)] tracking-tight select-none w-full m-0" style={{ fontSize: 'clamp(3.5rem, 18vw, 11rem)', lineHeight: 1 }}>
+            <div className="marca-fullview flex items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
+              <p className="hero-heading text-center text-[var(--brand-carbon)] tracking-tight select-none w-full m-0 min-w-0" style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}>
                 {BRAND.username}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-0">
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-[var(--brand-marron)]">
                 © 2026 {BRAND.username}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-[var(--brand-cafe)]">
-                Hecho con café desde Colombia
+                Hecho desde Sincelejo para el mundo.
               </p>
             </div>
           </div>

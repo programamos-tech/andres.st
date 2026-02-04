@@ -199,20 +199,20 @@ export default function BackstageLogin() {
           </div>
 
           <div className="pt-10 border-t border-[var(--border)]">
-            <div className="marca-fullview flex items-center justify-center px-6 pt-0 pb-0 mt-0 mb-0">
+            <div className="marca-fullview flex items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
               <p
-                className="hero-heading text-center text-[var(--text)] tracking-tight select-none w-full m-0"
-                style={{ fontSize: 'clamp(3.5rem, 18vw, 11rem)', lineHeight: 1 }}
+                className="hero-heading text-center text-[var(--text)] tracking-tight select-none w-full m-0 min-w-0"
+                style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}
               >
                 {BRAND.username}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-0">
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-[var(--text-muted)]">
                 © 2026 {BRAND.username}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-[var(--text-muted)]">
-                Hecho con café desde Colombia
+                Hecho desde Sincelejo para el mundo.
               </p>
             </div>
           </div>

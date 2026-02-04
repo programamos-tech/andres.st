@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { HomeNav } from '@/components/HomeNav';
 
 /** Logos de las marcas que trabajan conmigo */
 const CLIENT_LOGOS = [
@@ -14,38 +15,7 @@ const CLIENT_LOGOS = [
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 px-6 py-4 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]/50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="hero-heading">{BRAND.username}</span>
-          
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium">
-              Home
-            </Link>
-            <Link href="/tienda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Catálogo
-            </Link>
-            <Link href="/ayuda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Ayuda
-            </Link>
-            <Link href="/backstage" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Backstage
-            </Link>
-          </div>
-
-          <a 
-            href={`https://wa.me/${BRAND.whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--text)] transition-colors"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-          </a>
-        </div>
-      </nav>
+      <HomeNav />
 
       {/* Hero + Marcas: primera pantalla */}
       <div className="min-h-screen flex flex-col hero-glow">
@@ -59,12 +29,12 @@ export default function Home() {
                   {BRAND.name} <span className="text-[var(--text-muted)] font-normal">| Software a la medida</span>
                 </p>
                 
-                <h1 className="hero-heading text-2xl md:text-3xl lg:text-4xl xl:text-5xl mb-8 leading-[1.2]">
-                  No adaptes tu empresa a un software.<br />
-                  Construyamos el que tu marca necesita.
+                <h1 className="hero-heading text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl mb-8 leading-tight md:leading-[1.2] max-w-xl tracking-tight font-bold text-[var(--text)]">
+                  <span className="block whitespace-nowrap">No adaptes tu empresa a un software.</span>
+                  <span className="block whitespace-nowrap">Construyamos el que tu marca necesita.</span>
                 </h1>
                 
-                <p className="text-[var(--text-muted)] text-lg mb-8 leading-relaxed">
+                <p className="text-[var(--text-muted)] text-base md:text-lg mb-8 leading-relaxed">
                   Trabajo contigo para crear sistemas de gestión, control de equipos y seguimiento de clientes, programados desde cero para tu negocio y la forma en que realmente operas.
                 </p>
 
@@ -155,35 +125,39 @@ export default function Home() {
               Preguntas frecuentes
             </h2>
           </ScrollReveal>
-          <div className="space-y-2">
-            {[
-              {
-                q: '¿Cuánto cuesta un software a la medida?',
-                a: 'Depende del alcance: qué módulos necesitas, integraciones, usuarios, etc. En la primera conversación revisamos tu necesidad y te doy una idea de inversión sin compromiso.',
-              },
-              {
-                q: '¿Cuánto tiempo toma desarrollarlo?',
-                a: 'Varía según la complejidad. Un sistema básico puede estar en unas semanas; uno más completo en dos o tres meses. Definimos plazos realistas desde el inicio.',
-              },
-              {
-                q: '¿Qué necesito para empezar?',
-                a: 'Una idea clara de qué quieres lograr: procesos que hoy te duelen, reportes que necesitas, quién usará el sistema. No hace falta saber de tecnología; yo te guío en el resto.',
-              },
-              {
-                q: '¿Puedo hacer cambios después de que esté listo?',
-                a: 'Sí. El software es tuyo y puede crecer con tu negocio. Agregamos funciones, ajustamos reportes o integramos nuevas herramientas cuando lo necesites.',
-              },
-              {
-                q: '¿Cómo es el proceso de trabajo?',
-                a: 'Platicamos tu necesidad, definimos alcance y tiempos, desarrollo por etapas y vas viendo avances. Probamos juntos y al final lo desplegamos. Soporte directo por WhatsApp o correo.',
-              },
-              {
-                q: '¿En qué se diferencia de un software ya hecho (ERP, etc.)?',
-                a: 'Un ERP genérico te obliga a adaptar tu operación a cómo viene programado. A la medida es al revés: el sistema se construye alrededor de cómo tú trabajas, sin módulos de más ni funciones que no usas.',
-              },
-            ].map((faq, i) => (
-              <ScrollReveal key={i} delay={i * 50}>
-                <details className="faq-item group border-b border-[var(--border)]">
+          <ScrollReveal>
+            <div className="space-y-2">
+              {[
+                {
+                  q: '¿Qué es un software a la medida?',
+                  a: 'Es un sistema hecho específicamente para tu negocio: se programa desde cero según tus procesos, tu forma de trabajar y lo que necesitás. No es un producto empaquetado que adaptás; es la herramienta que tu marca necesita, sin módulos de más ni pantallas que no usás.',
+                },
+                {
+                  q: '¿Cuánto cuesta un software a la medida?',
+                  a: 'Depende del alcance: qué módulos necesitas, integraciones, usuarios, etc. En la primera conversación revisamos tu necesidad y te doy una idea de inversión sin compromiso.',
+                },
+                {
+                  q: '¿Cuánto tiempo toma desarrollarlo?',
+                  a: 'Varía según la complejidad. Un sistema básico puede estar en unas semanas; uno más completo en dos o tres meses. Definimos plazos realistas desde el inicio.',
+                },
+                {
+                  q: '¿Qué necesito para empezar?',
+                  a: 'Una idea clara de qué quieres lograr: procesos que hoy te duelen, reportes que necesitas, quién usará el sistema. No hace falta saber de tecnología; yo te guío en el resto.',
+                },
+                {
+                  q: '¿Puedo hacer cambios después de que esté listo?',
+                  a: 'Sí. El software es tuyo y puede crecer con tu negocio. Agregamos funciones, ajustamos reportes o integramos nuevas herramientas cuando lo necesites.',
+                },
+                {
+                  q: '¿Cómo es el proceso de trabajo?',
+                  a: 'Platicamos tu necesidad, definimos alcance y tiempos, desarrollo por etapas y vas viendo avances. Probamos juntos y al final lo desplegamos. Soporte directo por WhatsApp o correo.',
+                },
+                {
+                  q: '¿En qué se diferencia de un software ya hecho (ERP, etc.)?',
+                  a: 'Un ERP genérico te obliga a adaptar tu operación a cómo viene programado. A la medida es al revés: el sistema se construye alrededor de cómo tú trabajas, sin módulos de más ni funciones que no usas.',
+                },
+              ].map((faq, i) => (
+                <details key={i} className="faq-item group border-b border-[var(--border)]">
                   <summary className="py-5 cursor-pointer list-none flex items-center justify-between gap-4 text-[var(--text)] font-medium text-left">
                     <span>{faq.q}</span>
                     <span className="faq-icon flex-shrink-0 w-5 h-5 text-[var(--text-muted)] transition-transform group-open:rotate-180" aria-hidden>
@@ -194,14 +168,57 @@ export default function Home() {
                     {faq.a}
                   </p>
                 </details>
-              </ScrollReveal>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Comparación SaaS vs a la medida — qué trae cada uno */}
+      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
+        <div className="max-w-4xl mx-auto">
+          <ScrollReveal>
+            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-10 text-center tracking-tight">
+              SaaS vs software a la medida
+            </h2>
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] overflow-hidden">
+              <table className="w-full text-left text-base">
+                <thead>
+                  <tr className="border-b border-[var(--border)]">
+                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text)]">Qué incluye</th>
+                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text-muted)] text-center w-28">SaaS</th>
+                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text)] text-center w-28">A la medida</th>
+                  </tr>
+                </thead>
+                <tbody className="text-[var(--text-muted)]">
+                  {[
+                    { feature: 'Se adapta a tu forma de trabajar', saas: false, medida: true },
+                    { feature: 'Solo las funciones que necesitás', saas: false, medida: true },
+                    { feature: 'El producto es tuyo (no suscripción eterna)', saas: false, medida: true },
+                    { feature: 'Cambios cuando vos quieras', saas: false, medida: true },
+                    { feature: 'Datos en tu servidor o tu nube', saas: false, medida: true },
+                    { feature: 'Listo en poco tiempo (plantilla fija)', saas: true, medida: false },
+                    { feature: 'Pago mensual predecible (suscripción)', saas: true, medida: false },
+                  ].map((row, i) => (
+                    <tr key={i} className="border-b border-[var(--border)] last:border-b-0">
+                      <td className="py-4 px-5 md:px-8">{row.feature}</td>
+                      <td className="py-4 px-5 md:px-8 text-center">
+                        {row.saas ? <span className="text-[var(--status-ok)] text-lg" aria-hidden>✓</span> : <span className="text-[var(--text-muted)]/30">—</span>}
+                      </td>
+                      <td className="py-4 px-5 md:px-8 text-center">
+                        {row.medida ? <span className="text-[var(--status-ok)] text-lg" aria-hidden>✓</span> : <span className="text-[var(--text-muted)]/30">—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* CTA final */}
-      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
+      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg)]">
         <div className="max-w-2xl mx-auto text-center">
           <ScrollReveal>
             <h2 className="hero-heading text-2xl md:text-3xl lg:text-4xl text-[var(--text)] mb-4 tracking-tight">
@@ -297,20 +314,20 @@ export default function Home() {
 
           {/* Línea + logo grande */}
           <div className="pt-10 border-t border-[var(--border)]">
-            <div className="marca-fullview flex items-center justify-center px-6 pt-0 pb-0 mt-0 mb-0">
+            <div className="marca-fullview flex items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
               <p
                 className="hero-heading text-center text-[var(--text)] tracking-tight select-none w-full m-0"
-                style={{ fontSize: 'clamp(3.5rem, 18vw, 11rem)', lineHeight: 1 }}
+                style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}
               >
                 {BRAND.username}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-0">
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-[var(--text-muted)]">
                 © 2026 {BRAND.username}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-[var(--text-muted)]">
-                Hecho con café desde Colombia
+                Hecho desde Sincelejo para el mundo.
               </p>
             </div>
           </div>

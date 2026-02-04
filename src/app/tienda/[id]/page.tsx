@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { BRAND } from '@/lib/constants';
+import { HomeNav } from '@/components/HomeNav';
 import { getProductoById, getSolicitudesFromStorage, addSolicitudToStorage, removeSolicitudFromStorage } from '@/lib/tienda-productos';
 import { PreviewSimulation } from '@/components/tienda/PreviewSimulation';
 import { ScrollReveal } from '@/components/ScrollReveal';
@@ -35,11 +36,14 @@ export default function ProductoDetallePage() {
 
   if (!id || !producto) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-[var(--bg)]">
-        <p className="text-[var(--brand-marron)] mb-4">Producto no encontrado.</p>
-        <Link href="/tienda" className="text-[var(--brand-cafe)] font-medium hover:underline">
-          Volver al catálogo
-        </Link>
+      <div className="min-h-screen flex flex-col bg-[var(--bg)]">
+        <HomeNav />
+        <div className="flex-1 flex flex-col items-center justify-center px-6">
+          <p className="text-[var(--brand-marron)] mb-4">Producto no encontrado.</p>
+          <Link href="/tienda" className="text-[var(--brand-cafe)] font-medium hover:underline">
+            Volver al catálogo
+          </Link>
+        </div>
       </div>
     );
   }
@@ -53,37 +57,7 @@ export default function ProductoDetallePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
-      <nav className="sticky top-0 z-50 px-6 py-3 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]/50 shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="hero-heading hover:opacity-80 transition-opacity">
-            {BRAND.username}
-          </Link>
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Home
-            </Link>
-            <Link href="/tienda" className="text-sm font-medium text-[var(--text)]">
-              Catálogo
-            </Link>
-            <Link href="/ayuda" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Ayuda
-            </Link>
-            <Link href="/backstage" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
-              Backstage
-            </Link>
-            <a
-              href={`https://wa.me/${BRAND.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--text)] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-      </nav>
+      <HomeNav />
 
       <main className="flex-1 min-h-0 px-6 pt-3 pb-6 md:pt-4 md:pb-8">
         <div className="max-w-6xl mx-auto">
@@ -243,17 +217,17 @@ export default function ProductoDetallePage() {
             </div>
           </div>
           <div className="pt-10 border-t border-[var(--border)]">
-            <div className="marca-fullview flex items-center justify-center px-6 pt-0 pb-0 mt-0 mb-0">
-              <p className="hero-heading text-center text-[var(--brand-carbon)] tracking-tight select-none w-full m-0" style={{ fontSize: 'clamp(3.5rem, 18vw, 11rem)', lineHeight: 1 }}>
+            <div className="marca-fullview flex items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
+              <p className="hero-heading text-center text-[var(--brand-carbon)] tracking-tight select-none w-full m-0 min-w-0" style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}>
                 {BRAND.username}
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-0">
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-[var(--brand-marron)]">
                 © 2026 {BRAND.username}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-[var(--brand-cafe)]">
-                Hecho con café desde Colombia
+                Hecho desde Sincelejo para el mundo.
               </p>
             </div>
           </div>

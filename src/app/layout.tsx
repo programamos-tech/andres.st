@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import { Alegreya } from "next/font/google";
 import "./globals.css";
+
+const alegreya = Alegreya({
+  weight: ["700", "800", "900"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-alegreya",
+});
 
 export const metadata: Metadata = {
   title: "andres.backstage | Software a la medida",
@@ -12,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className={alegreya.variable}>
       <body className="antialiased">
         {children}
       </body>

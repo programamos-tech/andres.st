@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
+import { HomeNav } from '@/components/HomeNav';
 import type { TicketEstado } from '@/types/database';
 
 interface TicketData {
@@ -23,13 +24,46 @@ interface TicketData {
   historial: { estado: TicketEstado; fecha: string; nota?: string }[];
 }
 
-const ESTADOS: { id: TicketEstado; label: string }[] = [
-  { id: 'creado', label: 'Creado' },
-  { id: 'replicando', label: 'Replicando' },
-  { id: 'ajustando', label: 'Ajustando' },
-  { id: 'probando', label: 'Probando' },
-  { id: 'desplegando', label: 'Desplegando' },
-  { id: 'resuelto', label: 'Resuelto' }
+// Iconos por estado para que el usuario vea en qué etapa está
+const IconCreado = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+const IconReplicando = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+const IconAjustando = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+const IconProbando = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+  </svg>
+);
+const IconDesplegando = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+  </svg>
+);
+const IconResuelto = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const ESTADOS: { id: TicketEstado; label: string; Icon: React.FC }[] = [
+  { id: 'creado', label: 'Creado', Icon: IconCreado },
+  { id: 'replicando', label: 'Replicando', Icon: IconReplicando },
+  { id: 'ajustando', label: 'Ajustando', Icon: IconAjustando },
+  { id: 'probando', label: 'Probando', Icon: IconProbando },
+  { id: 'desplegando', label: 'Desplegando', Icon: IconDesplegando },
+  { id: 'resuelto', label: 'Resuelto', Icon: IconResuelto }
 ];
 
 const RAZONES_CANCELAR = [
@@ -43,12 +77,6 @@ const RAZONES_CANCELAR = [
 const IconBack = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
-
-const IconCheck = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
   </svg>
 );
 
@@ -80,30 +108,47 @@ export default function TicketPage() {
   const [cancelado, setCancelado] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
+  const isUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
   useEffect(() => {
-    // Simular carga de ticket (en producción vendría de Supabase)
-    setTimeout(() => {
-      if (ticketId.startsWith('tk_')) {
-        setTicket({
-          id: ticketId,
-          proyecto_nombre: 'ZonaT',
-          modulo: 'ventas',
-          tienda: 'Zona T Centro',
-          titulo: 'El sistema se cierra al exportar PDF',
-          descripcion: 'Cuando intento exportar un reporte en PDF, el sistema se queda cargando y luego se cierra sin mostrar ningún error.',
-          estado: 'replicando',
-          prioridad: 'alta',
-          creado_por_nombre: 'María García',
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          updated_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          historial: [
-            { estado: 'creado', fecha: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-            { estado: 'replicando', fecha: new Date(Date.now() - 30 * 60 * 1000).toISOString(), nota: 'Revisando el problema' }
-          ]
+    let cancelled = false;
+
+    // Ticket en la DB: buscar por UUID
+    if (isUuid(ticketId)) {
+      fetch(`/api/tickets/${ticketId}`)
+        .then((res) => {
+          if (cancelled) return null;
+          if (!res.ok) return null;
+          return res.json();
+        })
+        .then((data: TicketData | null) => {
+          if (cancelled) return;
+          if (data) setTicket(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          if (!cancelled) setLoading(false);
         });
+      return () => { cancelled = true; };
+    }
+
+    // Tickets antiguos (tk_xxx) en localStorage
+    const storageKey = 'ticket-data-' + ticketId;
+    if (typeof window !== 'undefined' && ticketId.startsWith('tk_')) {
+      try {
+        const stored = window.localStorage.getItem(storageKey);
+        if (stored) {
+          const data = JSON.parse(stored) as TicketData;
+          setTicket(data);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // ignore
       }
-      setLoading(false);
-    }, 500);
+    }
+
+    setLoading(false);
   }, [ticketId]);
 
   const copiarLink = async () => {
@@ -148,16 +193,10 @@ export default function TicketPage() {
   const progreso = ((estadoActualIndex + 1) / ESTADOS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-[var(--bg)]">
-      {/* Nav */}
-      <nav className="px-6 py-4 border-b border-[var(--border)]">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-semibold text-[var(--text)]">{BRAND.username}</Link>
-          <span className="text-sm text-[var(--text-muted)]">Ticket</span>
-        </div>
-      </nav>
+    <div className="min-h-screen flex flex-col bg-[var(--bg)]">
+      <HomeNav />
 
-      <main className="max-w-2xl mx-auto px-6 py-8">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
         {/* Back */}
         <Link 
           href="/ayuda" 
@@ -167,16 +206,21 @@ export default function TicketPage() {
           <span>Volver al chat</span>
         </Link>
 
-        {/* Ticket ID y acciones */}
-        <div className="flex items-center justify-between mb-6">
-          <span className="text-xs font-mono text-[var(--text-muted)]">{ticket.id}</span>
-          <button
-            onClick={copiarLink}
-            className="flex items-center gap-2 text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
-          >
-            <IconCopy />
-            <span>{copiado ? 'Copiado' : 'Copiar link'}</span>
-          </button>
+        {/* Copiar link para ver estado + ID */}
+        <div className="mb-6 p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+          <p className="text-xs text-[var(--text-muted)] mb-2">
+            Copiá el link para ver en qué estado está cuando quieras.
+          </p>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <span className="text-xs font-mono text-[var(--text-muted)] truncate">{ticket.id}</span>
+            <button
+              onClick={copiarLink}
+              className="flex items-center gap-2 text-sm text-[var(--text)] hover:opacity-80 transition-opacity shrink-0"
+            >
+              <IconCopy />
+              <span>{copiado ? '¡Copiado!' : 'Copiar link'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Estado cancelado */}
@@ -193,7 +237,10 @@ export default function TicketPage() {
           <div className="rounded-xl border border-[var(--border)] overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-[var(--border)]">
-              <h1 className="text-lg font-semibold text-[var(--text)] mb-3">{ticket.titulo}</h1>
+              <h1 className="text-lg font-semibold text-[var(--text)] mb-2">{ticket.titulo}</h1>
+              <p className="text-sm text-[var(--text-muted)] mb-3">
+                Solicitado por: <span className="text-[var(--text)] font-medium">{ticket.creado_por_nombre}</span>
+              </p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
                 <span className="uppercase">{ticket.proyecto_nombre}</span>
                 <span>·</span>
@@ -213,15 +260,15 @@ export default function TicketPage() {
                 {ESTADOS.map((estado, index) => {
                   const completado = index <= estadoActualIndex;
                   const activo = index === estadoActualIndex;
-                  
+                  const EstadoIcon = estado.Icon;
                   return (
                     <div key={estado.id} className="flex flex-col items-center flex-1">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs border-2 transition-colors ${
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors ${
                         completado 
                           ? 'bg-[var(--text)] border-[var(--text)] text-[var(--bg)]' 
                           : 'border-[var(--border)] text-[var(--text-muted)]'
                       }`}>
-                        {completado ? <IconCheck /> : index + 1}
+                        <EstadoIcon />
                       </div>
                       <span className={`text-[10px] mt-2 text-center ${
                         activo ? 'text-[var(--text)] font-medium' : 'text-[var(--text-muted)]'
@@ -240,10 +287,10 @@ export default function TicketPage() {
               </div>
             </div>
 
-            {/* Descripción */}
+            {/* Resumen de la conversación (chat con Andrebot) */}
             <div className="p-6 border-b border-[var(--border)]">
               <h2 className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-3">
-                Descripción
+                Resumen de la conversación (chat con Andrebot)
               </h2>
               <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{ticket.descripcion}</p>
             </div>
