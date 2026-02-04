@@ -74,7 +74,7 @@ export async function GET(
 
 /**
  * PATCH /api/backstage/projects/[id]
- * Body: { client_api_url?: string, client_api_key?: string }
+ * Body: { nombre_cliente?: string, nombre_proyecto?: string, client_api_url?: string, client_api_key?: string }
  * Empty string for client_api_key means "do not change" (keep current).
  */
 export async function PATCH(
@@ -84,12 +84,16 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
+    const nombre_cliente = typeof body.nombre_cliente === 'string' ? body.nombre_cliente.trim() || null : undefined;
+    const nombre_proyecto = typeof body.nombre_proyecto === 'string' ? body.nombre_proyecto.trim() || null : undefined;
     const client_api_url = typeof body.client_api_url === 'string' ? body.client_api_url.trim() || null : undefined;
     const client_api_key = typeof body.client_api_key === 'string' ? body.client_api_key : undefined;
 
     const supabase = getSupabase();
 
     const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (nombre_cliente !== undefined) payload.nombre_cliente = nombre_cliente;
+    if (nombre_proyecto !== undefined) payload.nombre_proyecto = nombre_proyecto;
     if (client_api_url !== undefined) payload.client_api_url = client_api_url;
     // Only update key when a non-empty value is sent; empty string = do not change
     if (client_api_key !== undefined && client_api_key !== '') payload.client_api_key = client_api_key;
@@ -106,6 +110,43 @@ export async function PATCH(
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Failed to update project';
     console.error('[backstage/projects/[id] PATCH]', e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/backstage/projects/[id]
+ * Deletes the project and all related data (health checks, activity, users, stores).
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = getSupabase();
+
+    const { data: existing } = await supabase
+      .from('proyectos_maestros')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    await supabase.from('project_health_checks').delete().eq('project_id', id);
+    await supabase.from('actividad_centralizada').delete().eq('proyecto_id', id);
+    await supabase.from('platform_users').delete().eq('project_id', id);
+    await supabase.from('project_stores').delete().eq('project_id', id);
+    const { error } = await supabase.from('proyectos_maestros').delete().eq('id', id);
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Failed to delete project';
+    console.error('[backstage/projects/[id] DELETE]', e);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

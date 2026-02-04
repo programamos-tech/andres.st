@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -81,6 +81,30 @@ export default function BackstageDashboard() {
 
   const activos = proyectos.filter(p => p.status_visual === 'active').length;
   const errores = proyectos.filter(p => p.status_visual === 'error').length;
+
+  const [healthByProjectId, setHealthByProjectId] = useState<Record<string, { status: 'active' | 'inactive'; latency_ms?: number | null }>>({});
+
+  const projectIds = proyectos.map((p) => p.id).sort().join(',');
+  useEffect(() => {
+    if (proyectos.length === 0) return;
+    const controller = new AbortController();
+    Promise.all(
+      proyectos.map(async (p) => {
+        try {
+          const res = await fetch(`/api/backstage/projects/${p.id}/health`, { signal: controller.signal });
+          const data = await res.json().catch(() => ({}));
+          return { id: p.id, status: data.status ?? 'inactive', latency_ms: data.latency_ms ?? null };
+        } catch {
+          return { id: p.id, status: 'inactive' as const, latency_ms: null };
+        }
+      })
+    ).then((results) => {
+      const map: Record<string, { status: 'active' | 'inactive'; latency_ms?: number | null }> = {};
+      results.forEach((r) => { map[r.id] = { status: r.status, latency_ms: r.latency_ms }; });
+      setHealthByProjectId(map);
+    });
+    return () => controller.abort();
+  }, [projectIds]);
 
   const ticketsActivos = MOCK_TICKETS.filter(t => t.estado !== 'resuelto');
 
@@ -187,7 +211,7 @@ export default function BackstageDashboard() {
               <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Proyectos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {proyectos.map((p) => (
-                  <ProyectoCard key={p.id} proyecto={p} />
+                  <ProyectoCard key={p.id} proyecto={p} apiHealth={healthByProjectId[p.id]} />
                 ))}
                 <button
                   type="button"

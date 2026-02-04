@@ -15,6 +15,8 @@ interface DashboardHeaderProps {
   isDemo?: boolean;
   /** Si false, no se muestran stats ni botón refrescar (ej. en detalle de proyecto). Default true */
   showStats?: boolean;
+  /** Si true, el header no lleva padding ni max-width propio (va dentro de un contenedor con px-6) para alinear con el body */
+  contained?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -30,6 +32,7 @@ export function DashboardHeader({
   onRefresh,
   isDemo,
   showStats = true,
+  contained = false,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -45,8 +48,8 @@ export function DashboardHeader({
   };
 
   return (
-    <header className="border-b border-[var(--border)] px-6 py-3 bg-[var(--bg)]">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className={contained ? 'border-b border-[var(--border)] py-3 bg-[var(--bg)]' : 'border-b border-[var(--border)] px-6 py-3 bg-[var(--bg)]'}>
+      <div className={contained ? 'flex items-center justify-between' : 'max-w-7xl mx-auto flex items-center justify-between'}>
         {/* Logo y nav */}
         <div className="flex items-center gap-8">
           <Link href="/backstage" className="flex items-center gap-3">

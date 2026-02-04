@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
@@ -49,6 +49,24 @@ const IconSpinner = () => (
   </svg>
 );
 
+const IconApiOk = () => (
+  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
+
+const IconApiDown = () => (
+  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+  </svg>
+);
+
+const IconTrash = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
 function activityLabel(action: string, module: string, details: Record<string, unknown>): string {
   const desc = details?.description;
   if (typeof desc === 'string' && desc.trim()) return desc;
@@ -74,6 +92,7 @@ function activityLabel(action: string, module: string, details: Record<string, u
 
 export default function ProyectoDetallePage() {
   const params = useParams();
+  const router = useRouter();
   const proyectoId = params.id as string;
   const [project, setProject] = useState<ProjectForBackstage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,11 +111,16 @@ export default function ProyectoDetallePage() {
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [activities, setActivities] = useState<{ id: string; user_id: string | null; user_name: string | null; action: string; module: string; details: Record<string, unknown>; store_id: string | null; created_at: string }[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(false);
-  type ClientTab = 'proyectos' | 'sync' | 'facturas' | 'soporte';
+  type ClientTab = 'proyectos' | 'config' | 'sync' | 'facturas' | 'soporte';
   const [clientTab, setClientTab] = useState<ClientTab>('proyectos');
+  const [configNombreCliente, setConfigNombreCliente] = useState('');
+  const [configNombreProyecto, setConfigNombreProyecto] = useState('');
+  const [configSaveStatus, setConfigSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [liveHealth, setLiveHealth] = useState<{ status: 'active' | 'inactive'; latency_ms?: number | null } | null>(null);
   const [liveHealthLoading, setLiveHealthLoading] = useState(false);
   const [healthHistory, setHealthHistory] = useState<{ id: string; checked_at: string; status: string; latency_ms: number | null }[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'error'>('idle');
 
   const fetchProject = useCallback(async () => {
     if (!proyectoId) return;
@@ -126,6 +150,13 @@ export default function ProyectoDetallePage() {
   }, [fetchProject]);
 
   useEffect(() => {
+    if (project) {
+      setConfigNombreCliente(project.nombre_cliente ?? '');
+      setConfigNombreProyecto(project.nombre_proyecto ?? '');
+    }
+  }, [project?.id, project?.nombre_cliente, project?.nombre_proyecto]);
+
+  useEffect(() => {
     if (!proyectoId) return;
     setStoresLoading(true);
     setUsersLoading(true);
@@ -141,11 +172,8 @@ export default function ProyectoDetallePage() {
     });
   }, [proyectoId]);
 
-  useEffect(() => {
-    if (!proyectoId || !selectedStoreId) {
-      setActivities([]);
-      return;
-    }
+  const fetchActivities = useCallback(() => {
+    if (!proyectoId || !selectedStoreId) return;
     setActivitiesLoading(true);
     fetch(`/api/backstage/projects/${proyectoId}/activities?store_id=${encodeURIComponent(selectedStoreId)}&limit=80`)
       .then((r) => r.json())
@@ -155,11 +183,8 @@ export default function ProyectoDetallePage() {
       .finally(() => setActivitiesLoading(false));
   }, [proyectoId, selectedStoreId]);
 
-  useEffect(() => {
-    if (!proyectoId || !selectedStoreId || !project?.client_api_url) {
-      setLiveHealth(null);
-      return;
-    }
+  const fetchLiveHealth = useCallback(() => {
+    if (!proyectoId || !selectedStoreId || !project?.client_api_url) return;
     setLiveHealthLoading(true);
     setLiveHealth(null);
     fetch(`/api/backstage/projects/${proyectoId}/health`)
@@ -175,17 +200,29 @@ export default function ProyectoDetallePage() {
       .finally(() => setLiveHealthLoading(false));
   }, [proyectoId, selectedStoreId, project?.client_api_url]);
 
-  useEffect(() => {
-    if (!proyectoId || !selectedStoreId) {
-      setHealthHistory([]);
-      return;
-    }
+  const fetchHealthHistory = useCallback(() => {
+    if (!proyectoId || !selectedStoreId) return;
     fetch(`/api/backstage/projects/${proyectoId}/health/history?limit=15`)
       .then((r) => r.json())
       .then((d) => (Array.isArray(d) ? d : []))
       .then(setHealthHistory)
       .catch(() => setHealthHistory([]));
-  }, [proyectoId, selectedStoreId, liveHealth]);
+  }, [proyectoId, selectedStoreId]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId) return;
+    fetchActivities();
+  }, [fetchActivities]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId || !project?.client_api_url) return;
+    fetchLiveHealth();
+  }, [fetchLiveHealth]);
+
+  useEffect(() => {
+    if (!proyectoId || !selectedStoreId) return;
+    fetchHealthHistory();
+  }, [fetchHealthHistory, liveHealth]);
 
   const handleSaveConfig = async () => {
     if (!proyectoId) return;
@@ -249,6 +286,48 @@ export default function ProyectoDetallePage() {
     }
   };
 
+  const handleSaveConfigNames = async () => {
+    if (!proyectoId) return;
+    setConfigSaveStatus('saving');
+    try {
+      const res = await fetch(`/api/backstage/projects/${proyectoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_cliente: configNombreCliente.trim() || null,
+          nombre_proyecto: configNombreProyecto.trim() || null,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Failed to save');
+      }
+      setConfigSaveStatus('saved');
+      await fetchProject();
+      setTimeout(() => setConfigSaveStatus('idle'), 2000);
+    } catch {
+      setConfigSaveStatus('error');
+      setTimeout(() => setConfigSaveStatus('idle'), 3000);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!proyectoId) return;
+    setDeleteStatus('deleting');
+    try {
+      const res = await fetch(`/api/backstage/projects/${proyectoId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Failed to delete');
+      }
+      router.push('/backstage');
+      return;
+    } catch {
+      setDeleteStatus('error');
+      setTimeout(() => setDeleteStatus('idle'), 3000);
+    }
+  };
+
   if (loading) {
     return (
       <BackstageGuard>
@@ -295,9 +374,10 @@ export default function ProyectoDetallePage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
-        <DashboardHeader showStats={false} onRefresh={fetchProject} />
+        <div className="max-w-7xl mx-auto px-6">
+          <DashboardHeader showStats={false} onRefresh={fetchProject} contained />
 
-        <main className="w-full max-w-[1920px] mx-auto px-6 py-8">
+          <main className="py-8">
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-center gap-4">
@@ -327,11 +407,12 @@ export default function ProyectoDetallePage() {
             </a>
           </div>
 
-          {/* Submenu cliente: Resumen, Sync, Facturas, Soporte */}
+          {/* Submenu cliente: Resumen, Configuración, Sync, Facturas, Soporte */}
           <nav className="flex items-center gap-1 mb-6 border-b border-[var(--border)]">
             {(
               [
                 { id: 'proyectos' as ClientTab, label: 'Resumen' },
+                { id: 'config' as ClientTab, label: 'Configuración' },
                 { id: 'sync' as ClientTab, label: 'Sync' },
                 { id: 'facturas' as ClientTab, label: 'Facturas' },
                 { id: 'soporte' as ClientTab, label: 'Soporte' },
@@ -370,6 +451,7 @@ export default function ProyectoDetallePage() {
                     {stores.map((s) => {
                       const isSelected = selectedStoreId === s.external_id;
                       const storeName = s.name ?? s.external_id;
+                      const storeLogoUrl = resolveLogoUrl(s.logo_url || project.logo_url);
                       return (
                         <button
                           key={s.id}
@@ -378,8 +460,8 @@ export default function ProyectoDetallePage() {
                           className={`flex flex-col items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] rounded-2xl p-2 ${isSelected ? 'bg-[var(--bg)] ring-1 ring-[var(--accent)]/50' : 'hover:bg-[var(--bg)]/50 rounded-2xl'}`}
                         >
                           <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-[var(--bg-secondary)] border border-[var(--border)] shadow-inner">
-                            {s.logo_url ? (
-                              <img src={s.logo_url} alt={storeName} className="w-full h-full object-cover object-center" />
+                            {storeLogoUrl ? (
+                              <img src={storeLogoUrl} alt={storeName} className="w-full h-full object-cover object-center" />
                             ) : (
                               <span className="text-xl font-semibold text-[var(--text-muted)]">{(storeName).charAt(0)}</span>
                             )}
@@ -408,9 +490,20 @@ export default function ProyectoDetallePage() {
                     return (
                       <>
                         <section className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] overflow-hidden">
-                          <h2 className="text-sm font-medium text-[var(--text-muted)] p-4 border-b border-[var(--border)]">
-                            Estado · {selectedStore?.name ?? selectedStoreId}
-                          </h2>
+                          <div className="flex items-center justify-between gap-2 p-4 border-b border-[var(--border)]">
+                            <h2 className="text-sm font-medium text-[var(--text-muted)]">
+                              Estado · {selectedStore?.name ?? selectedStoreId}
+                            </h2>
+                            <button
+                              type="button"
+                              onClick={() => { fetchLiveHealth(); fetchHealthHistory(); }}
+                              disabled={liveHealthLoading}
+                              className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--text-muted)] transition-colors disabled:opacity-50"
+                              title="Actualizar estado"
+                            >
+                              {liveHealthLoading ? <IconSpinner /> : <IconRefresh />}
+                            </button>
+                          </div>
                           <div className="p-4 space-y-4">
                             {liveHealthLoading ? (
                               <div className="flex items-center gap-3 p-4 rounded-lg border border-[var(--border)] bg-[var(--bg)]">
@@ -419,9 +512,19 @@ export default function ProyectoDetallePage() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-3 p-4 rounded-lg border border-[var(--border)] bg-[var(--bg)]">
-                                <span className={`w-3 h-3 rounded-full shrink-0 ${status.bg}`} aria-hidden />
+                                {effectiveStatus === 'active' ? (
+                                  <span className="text-[var(--status-ok)] shrink-0" aria-hidden>
+                                    <IconApiOk />
+                                  </span>
+                                ) : (
+                                  <span className={`text-[var(--status-error)] shrink-0`} aria-hidden>
+                                    <IconApiDown />
+                                  </span>
+                                )}
                                 <div>
-                                  <p className={`text-sm font-medium ${status.color}`}>{status.label}</p>
+                                  <p className={`text-sm font-medium ${effectiveStatus === 'active' ? 'text-[var(--status-ok)]' : status.color}`}>
+                                    {status.label}
+                                  </p>
                                   <p className="text-sm text-[var(--text-muted)] mt-0.5">
                                     {status.desc}
                                     {liveHealth?.latency_ms != null && liveHealth.status === 'active' && (
@@ -443,7 +546,12 @@ export default function ProyectoDetallePage() {
                                   {healthHistory.map((h) => (
                                     <li key={h.id} className="flex items-center justify-between gap-2 text-[var(--text)]">
                                       <span className="text-[var(--text-muted)] shrink-0">{formatDistanceToNow(new Date(h.checked_at), { addSuffix: true, locale: es })}</span>
-                                      <span className={h.status === 'active' ? 'text-[var(--status-ok)]' : 'text-[var(--status-error)]'}>
+                                      <span className={`inline-flex items-center gap-1.5 font-medium ${h.status === 'active' ? 'text-[var(--status-ok)]' : 'text-[var(--status-error)]'}`}>
+                                        {h.status === 'active' ? (
+                                          <IconApiOk />
+                                        ) : (
+                                          <IconApiDown />
+                                        )}
                                         {h.status === 'active' ? 'Arriba' : 'Caído'}
                                         {h.latency_ms != null && h.status === 'active' && (
                                           <span className="text-[var(--text-muted)] font-normal"> · {h.latency_ms} ms</span>
@@ -457,9 +565,20 @@ export default function ProyectoDetallePage() {
                           </div>
                         </section>
                         <section className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] overflow-hidden">
-                          <h2 className="text-sm font-medium text-[var(--text-muted)] p-4 border-b border-[var(--border)]">
-                            Actividades · {selectedStore?.name ?? selectedStoreId}
-                          </h2>
+                          <div className="flex items-center justify-between gap-2 p-4 border-b border-[var(--border)]">
+                            <h2 className="text-sm font-medium text-[var(--text-muted)]">
+                              Actividades · {selectedStore?.name ?? selectedStoreId}
+                            </h2>
+                            <button
+                              type="button"
+                              onClick={fetchActivities}
+                              disabled={activitiesLoading}
+                              className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--text-muted)] transition-colors disabled:opacity-50"
+                              title="Actualizar actividades"
+                            >
+                              {activitiesLoading ? <IconSpinner /> : <IconRefresh />}
+                            </button>
+                          </div>
                           <div className="p-4 max-h-[400px] overflow-y-auto">
                             {activitiesLoading ? (
                               <p className="text-sm text-[var(--text-muted)]">Cargando actividades...</p>
@@ -502,13 +621,15 @@ export default function ProyectoDetallePage() {
                   <p className="text-sm text-[var(--text-muted)]">Sin tiendas. Ejecuta Sync para traer las microtiendas del cliente.</p>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {stores.map((s) => (
+                    {stores.map((s) => {
+                      const storeLogoUrl = resolveLogoUrl(s.logo_url || project.logo_url);
+                      return (
                       <div
                         key={s.id}
                         className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] flex flex-col items-center gap-2 text-center"
                       >
-                        {s.logo_url ? (
-                          <img src={s.logo_url} alt={s.name ?? s.external_id} className="w-12 h-12 rounded-lg object-contain bg-[var(--bg)]" />
+                        {storeLogoUrl ? (
+                          <img src={storeLogoUrl} alt={s.name ?? s.external_id} className="w-12 h-12 rounded-lg object-contain bg-[var(--bg)]" />
                         ) : (
                           <div className="w-12 h-12 rounded-lg bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-lg font-semibold text-[var(--text-muted)]">
                             {(s.name ?? '?').charAt(0)}
@@ -516,7 +637,7 @@ export default function ProyectoDetallePage() {
                         )}
                         <span className="text-sm font-medium text-[var(--text)] truncate w-full">{s.name ?? s.external_id}</span>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 )}
               </section>
@@ -565,6 +686,91 @@ export default function ProyectoDetallePage() {
             </>
           )}
 
+          {clientTab === 'config' && (
+            <section className="mb-8 p-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Nombre del cliente y del proyecto</h2>
+              <p className="text-sm text-[var(--text-muted)] mb-4">
+                Edita el nombre del cliente y el nombre del proyecto tal como aparecen en Backstage.
+              </p>
+              <div className="space-y-4 max-w-xl">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text)] mb-1">Nombre del cliente</label>
+                  <input
+                    type="text"
+                    value={configNombreCliente}
+                    onChange={(e) => setConfigNombreCliente(e.target.value)}
+                    placeholder="Ej: Aleya"
+                    className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text)] mb-1">Nombre del proyecto</label>
+                  <input
+                    type="text"
+                    value={configNombreProyecto}
+                    onChange={(e) => setConfigNombreProyecto(e.target.value)}
+                    placeholder="Ej: Aleya Shop"
+                    className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveConfigNames}
+                  disabled={configSaveStatus === 'saving'}
+                  className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 transition-colors text-sm font-medium"
+                >
+                  {configSaveStatus === 'saving' ? 'Guardando...' : configSaveStatus === 'saved' ? 'Guardado' : configSaveStatus === 'error' ? 'Error' : 'Guardar'}
+                </button>
+              </div>
+
+              <div className="mt-10 pt-8 border-t border-[var(--border)]">
+                <h2 className="text-sm font-medium text-[var(--text-muted)] mb-2">Zona de peligro</h2>
+                <p className="text-sm text-[var(--text-muted)] mb-3">
+                  Eliminar el proyecto borrará todos los datos asociados (tiendas, usuarios, historial de salud y actividades). Esta acción no se puede deshacer.
+                </p>
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--status-error)] text-[var(--status-error)] hover:bg-[var(--status-error)]/10 transition-colors text-sm font-medium"
+                  >
+                    <IconTrash />
+                    Eliminar proyecto
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-[var(--text)]">¿Eliminar &quot;{project.nombre_proyecto}&quot;?</span>
+                    <button
+                      type="button"
+                      onClick={handleDeleteProject}
+                      disabled={deleteStatus === 'deleting'}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--status-error)] text-white hover:opacity-90 disabled:opacity-50 transition-colors text-sm font-medium"
+                    >
+                      {deleteStatus === 'deleting' ? (
+                        <>
+                          <IconSpinner />
+                          Eliminando...
+                        </>
+                      ) : deleteStatus === 'error' ? (
+                        'Error. Reintentar'
+                      ) : (
+                        'Sí, eliminar'
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowDeleteConfirm(false); setDeleteStatus('idle'); }}
+                      disabled={deleteStatus === 'deleting'}
+                      className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)] disabled:opacity-50 transition-colors text-sm"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {clientTab === 'sync' && (
             <section className="mb-8 p-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
               <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Client app (store sync)</h2>
@@ -578,7 +784,7 @@ export default function ProyectoDetallePage() {
                     type="url"
                     value={clientApiUrl}
                     onChange={(e) => setClientApiUrl(e.target.value)}
-                    placeholder="https://client-app.example.com or http://localhost:3002"
+                    placeholder="Ej: http://localhost:3000 o https://tu-app.com (cualquier URL del cliente)"
                     className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   />
                 </div>
@@ -648,7 +854,8 @@ export default function ProyectoDetallePage() {
               </Link>
             </section>
           )}
-        </main>
+          </main>
+        </div>
       </div>
     </BackstageGuard>
   );

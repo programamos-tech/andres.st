@@ -50,7 +50,13 @@ async function fetchClientData(baseUrl: string, apiKey: string): Promise<ClientR
     if (res.status === 401) {
       throw new Error('API key incorrecta. Revisa que coincida con la configurada en la app del cliente.');
     }
-    throw new Error(`Error del cliente (${res.status}): ${text.slice(0, 200)}`);
+    if (res.status === 404) {
+      throw new Error(
+        'La app del cliente devolvió 404. ¿Tiene la ruta /api/andres/usuarios-tiendas? Revisa la URL del proyecto (client_api_url) y que la app del cliente exponga ese endpoint.'
+      );
+    }
+    const snippet = text.startsWith('<') ? '(respuesta HTML)' : text.slice(0, 200);
+    throw new Error(`Error del cliente (${res.status}): ${snippet}`);
   }
 
   return res.json() as Promise<ClientResponse>;

@@ -11,7 +11,7 @@ export const MOCK_PROYECTOS: ProyectoConEstadisticas[] = [
     url_dominio: 'https://zonat.programamos.co',
     status_servidor: 'active',
     descripcion: 'Sistema de punto de venta para tiendas ZonaT en Sincelejo',
-    logo_url: null,
+    logo_url: '/zonat.png',
     color_marca: '#FF6B6B',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
