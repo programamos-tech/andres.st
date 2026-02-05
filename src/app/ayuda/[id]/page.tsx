@@ -7,20 +7,24 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
 import { MOCK_TICKETS, MOCK_COMENTARIOS } from '@/lib/mock-tickets';
-import type { Ticket } from '@/types/database';
+import type { Ticket, TicketEstado } from '@/types/database';
 
-const estadoLabels: Record<Ticket['estado'], string> = {
-  open: 'Abierto',
-  in_progress: 'En progreso',
-  resolved: 'Resuelto',
-  closed: 'Cerrado'
+const estadoLabels: Record<TicketEstado, string> = {
+  creado: 'Creado',
+  replicando: 'Replicando',
+  ajustando: 'Ajustando',
+  probando: 'Probando',
+  desplegando: 'Desplegando',
+  resuelto: 'Resuelto',
 };
 
-const estadoColors: Record<Ticket['estado'], string> = {
-  open: 'bg-amber-500/10 text-amber-500',
-  in_progress: 'bg-blue-500/10 text-blue-500',
-  resolved: 'bg-emerald-500/10 text-emerald-500',
-  closed: 'bg-[var(--border)] text-[var(--text-muted)]'
+const estadoColors: Record<TicketEstado, string> = {
+  creado: 'bg-amber-500/10 text-amber-500',
+  replicando: 'bg-blue-500/10 text-blue-500',
+  ajustando: 'bg-violet-500/10 text-violet-500',
+  probando: 'bg-sky-500/10 text-sky-500',
+  desplegando: 'bg-emerald-500/10 text-emerald-500',
+  resuelto: 'bg-emerald-500/10 text-emerald-500',
 };
 
 export default function TicketDetailPage() {
@@ -85,7 +89,7 @@ export default function TicketDetailPage() {
           <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
             <span>{ticket.creado_por_nombre}</span>
             <span>·</span>
-            <span>{ticket.proyectos_maestros?.nombre_proyecto}</span>
+            <span>{ticket.proyecto_nombre || '—'}</span>
             <span>·</span>
             <span>{format(new Date(ticket.created_at), "d 'de' MMMM, HH:mm", { locale: es })}</span>
           </div>
@@ -134,7 +138,7 @@ export default function TicketDetailPage() {
         </div>
 
         {/* Nuevo comentario */}
-        {ticket.estado !== 'closed' && (
+        {ticket.estado !== 'resuelto' && (
           <div>
             <h2 className="font-semibold mb-4">Agregar comentario</h2>
             <div className="space-y-4">

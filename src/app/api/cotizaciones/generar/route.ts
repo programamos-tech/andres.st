@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
     const buffer = await renderToBuffer(doc as Parameters<typeof renderToBuffer>[0]);
 
     const filename = `${numero}.pdf`;
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
