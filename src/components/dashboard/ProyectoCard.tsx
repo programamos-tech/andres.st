@@ -31,6 +31,18 @@ const IconApiDown = () => (
   </svg>
 );
 
+const IconUsers = () => (
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+
+const IconActivity = () => (
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
 export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
   const statusColor = {
     active: 'bg-[var(--status-ok)]',
@@ -38,58 +50,74 @@ export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
     error: 'bg-[var(--status-error)]'
   };
 
-  // Logo: primero el de la API (tras Sync); si no hay, fallback para ZonaT para que siempre se vea el logo en la card
   const logoFromApi = proyecto.logo_url?.trim() || null;
   const isZonat = proyecto.nombre_cliente === 'ZonaT' || proyecto.nombre_proyecto?.toLowerCase().includes('zonat');
   const logoUrl = logoFromApi || (isZonat ? '/zonat.png' : null);
 
   return (
-    <Link 
+    <Link
       href={`/backstage/proyecto/${proyecto.id}`}
-      className="block p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--text-muted)] transition-colors"
+      className="block p-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--text-muted)] transition-colors h-full"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center font-semibold overflow-hidden shrink-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center font-semibold overflow-hidden shrink-0">
             {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={`Logo ${proyecto.nombre_proyecto}`}
-                className="w-full h-full object-cover object-center"
-              />
+              <img src={logoUrl} alt="" className="w-full h-full object-cover object-center" />
             ) : (
               proyecto.nombre_proyecto.charAt(0)
             )}
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium">{proyecto.nombre_proyecto}</h3>
-              <span className={`w-2 h-2 rounded-full ${statusColor[proyecto.status_visual]}`}></span>
+              <h3 className="font-medium truncate">{proyecto.nombre_proyecto}</h3>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${statusColor[proyecto.status_visual]}`} title={proyecto.status_visual} />
             </div>
-            <p className="text-sm text-[var(--text-muted)]">{proyecto.nombre_cliente}</p>
+            <p className="text-sm text-[var(--text-muted)] truncate">{proyecto.nombre_cliente}</p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 shrink-0">
           {proyecto.errores_ultima_hora > 0 && (
-            <span className="text-xs font-medium" style={{ color: 'var(--status-error)' }}>
-              {proyecto.errores_ultima_hora} error{proyecto.errores_ultima_hora > 1 ? 'es' : ''}
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded text-white" style={{ backgroundColor: 'var(--status-error)' }}>
+              {proyecto.errores_ultima_hora}
             </span>
           )}
-          <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${apiHealth?.status === 'active' ? 'text-[var(--status-ok)]' : apiHealth ? 'text-[var(--status-error)]' : 'text-[var(--text-muted)]'}`}>
+          <span className={`inline-flex items-center gap-1 text-xs font-medium ${apiHealth?.status === 'active' ? 'text-[var(--status-ok)]' : apiHealth ? 'text-[var(--status-error)]' : 'text-[var(--text-muted)]'}`}>
             {apiHealth?.status === 'active' && <IconApiOk />}
             {apiHealth?.status === 'inactive' && <IconApiDown />}
-            {apiHealth?.status === 'active'
-              ? `API arriba${apiHealth.latency_ms != null ? ` · ${apiHealth.latency_ms}ms` : ''}`
-              : apiHealth?.status === 'inactive'
-                ? 'API caída'
-                : '—'}
+            {apiHealth?.status === 'active' ? (apiHealth.latency_ms != null ? `${apiHealth.latency_ms}ms` : 'OK') : apiHealth?.status === 'inactive' ? 'Caída' : '—'}
           </span>
-          <span className="text-[var(--text-muted)]">
-            <IconArrow />
+          <span className="text-[var(--text-muted)]"><IconArrow /></span>
+        </div>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-[var(--border)] grid grid-cols-2 gap-3">
+        <div className="flex items-center gap-2 text-[var(--text-muted)]">
+          <IconUsers />
+          <span className="text-xs">
+            <span className="font-semibold text-[var(--text)]">{proyecto.usuarios_activos}</span> usuarios activos (1h)
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[var(--text-muted)]">
+          <IconActivity />
+          <span className="text-xs">
+            <span className="font-semibold text-[var(--text)]">{proyecto.actividad_ultima_hora}</span> actividad (1h)
           </span>
         </div>
       </div>
+
+      {proyecto.top_modulos && proyecto.top_modulos.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-[var(--border)]">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">Módulos más usados</p>
+          <div className="flex flex-wrap gap-1">
+            {proyecto.top_modulos.slice(0, 3).map((m) => (
+              <span key={m.modulo} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]">
+                {m.modulo} · {m.total_usos}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </Link>
   );
 }

@@ -19,6 +19,8 @@ const NAV_ITEMS = [
   { href: '/backstage', label: 'Proyectos' },
   { href: '/backstage/actividades', label: 'Actividades' },
   { href: '/backstage/tickets', label: 'Tickets' },
+  { href: '/backstage/andrebot', label: 'Andrebot' },
+  { href: '/cotizaciones', label: 'Cotizaciones' },
 ];
 
 export function BackstageSubNav({

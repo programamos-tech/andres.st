@@ -102,10 +102,21 @@ function descripcionSinLineaDeImagen(descripcion: string): string {
     .trim();
 }
 
+type FiltroUrgencia = 'all' | 'urgente' | 'alto_espera' | 'alto_maromas' | 'medio';
+
+const URGENCIA_OPCIONES: { id: FiltroUrgencia; label: string }[] = [
+  { id: 'all', label: 'Todas' },
+  { id: 'urgente', label: 'Urgente' },
+  { id: 'alto_espera', label: 'Alto (espera)' },
+  { id: 'alto_maromas', label: 'Alto (maromas)' },
+  { id: 'medio', label: 'Medio' },
+];
+
 export default function BackstageTicketsPage() {
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<'all' | 'activos' | 'resueltos'>('activos');
+  const [filtroUrgencia, setFiltroUrgencia] = useState<FiltroUrgencia>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [ticketDetalle, setTicketDetalle] = useState<TicketDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -141,15 +152,24 @@ export default function BackstageTicketsPage() {
     else setTicketDetalle(null);
   }, [selectedId, fetchDetail]);
 
-  const ticketsFiltrados = tickets.filter((t) => {
+  const ticketsPorEstado = tickets.filter((t) => {
     if (filtro === 'all') return true;
     if (filtro === 'activos') return t.estado !== 'resuelto';
     if (filtro === 'resueltos') return t.estado === 'resuelto';
     return true;
   });
 
+  const ticketsFiltrados = ticketsPorEstado.filter((t) => {
+    if (filtroUrgencia === 'all') return true;
+    const p = (t.prioridad || 'medio') as string;
+    return p === filtroUrgencia;
+  });
+
   const ticketsActivos = tickets.filter((t) => t.estado !== 'resuelto').length;
   const ticketsResueltos = tickets.length - ticketsActivos;
+
+  const countByUrgencia = (prioridad: FiltroUrgencia) =>
+    prioridad === 'all' ? ticketsPorEstado.length : ticketsPorEstado.filter((t) => (t.prioridad || 'medio') === prioridad).length;
 
   const cambiarEstado = async (ticketId: string, nuevoEstado: TicketEstado) => {
     if (updatingEstado) return;
@@ -184,31 +204,57 @@ export default function BackstageTicketsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mb-6">
-            <button
-              onClick={() => setFiltro('all')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                filtro === 'all' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-              }`}
-            >
-              Todos ({tickets.length})
-            </button>
-            <button
-              onClick={() => setFiltro('activos')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                filtro === 'activos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-              }`}
-            >
-              Activos ({ticketsActivos})
-            </button>
-            <button
-              onClick={() => setFiltro('resueltos')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                filtro === 'resueltos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-              }`}
-            >
-              Resueltos ({ticketsResueltos})
-            </button>
+          <div className="space-y-4 mb-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mr-1">Estado</span>
+              <button
+                onClick={() => setFiltro('all')}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  filtro === 'all' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                Todos ({tickets.length})
+              </button>
+              <button
+                onClick={() => setFiltro('activos')}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  filtro === 'activos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                Activos ({ticketsActivos})
+              </button>
+              <button
+                onClick={() => setFiltro('resueltos')}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  filtro === 'resueltos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                }`}
+              >
+                Resueltos ({ticketsResueltos})
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mr-1">Urgencia</span>
+              {URGENCIA_OPCIONES.map((opt) => {
+                const n = countByUrgencia(opt.id);
+                const isActive = filtroUrgencia === opt.id;
+                const isUrgente = opt.id === 'urgente';
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setFiltroUrgencia(opt.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      isActive
+                        ? isUrgente
+                          ? 'bg-[var(--status-error)] text-white'
+                          : 'bg-[var(--text)] text-[var(--bg)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                    }`}
+                  >
+                    {opt.label} ({n})
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -313,14 +359,12 @@ export default function BackstageTicketsPage() {
                           <span>{ticketDetalle.tienda}</span>
                         </>
                       )}
-                      {(ticketDetalle.prioridad && ticketDetalle.prioridad !== 'medio') && (
-                        <>
-                          <span>·</span>
-                          <span className="font-medium text-[var(--status-warn)]">
-                            {PRIORIDAD_LABEL[ticketDetalle.prioridad] || ticketDetalle.prioridad}
-                          </span>
-                        </>
-                      )}
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-1">Urgencia</p>
+                      <span className={`inline-block text-xs font-semibold px-2 py-1 rounded border ${PRIORIDAD_BADGE_CLASS[ticketDetalle.prioridad || 'medio'] || PRIORIDAD_BADGE_CLASS.medio}`}>
+                        {PRIORIDAD_LABEL[ticketDetalle.prioridad || 'medio'] || ticketDetalle.prioridad || 'Medio'}
+                      </span>
                     </div>
                   </div>
 
@@ -372,7 +416,7 @@ export default function BackstageTicketsPage() {
                               <p className="text-[10px] text-[var(--text-muted)] px-2 py-1.5">Imagen del error · clic para abrir en tamaño real</p>
                             </div>
                           )}
-                          <p className="text-sm text-[var(--text)] whitespace-pre-wrap line-clamp-4">{descripcionSinLineaDeImagen(ticketDetalle.descripcion)}</p>
+                          <p className="text-sm text-[var(--text)] whitespace-pre-wrap">{descripcionSinLineaDeImagen(ticketDetalle.descripcion)}</p>
                         </>
                       );
                     })()}

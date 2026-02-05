@@ -56,9 +56,11 @@ interface ActividadConProyecto {
 /** Mapa proyecto_id -> logo_url para usar cuando la API del cliente no trae logo (fallback desde configuración backstage) */
 export interface ActivityFeedProps {
   projectLogos?: Record<string, string | null>;
+  /** Si true, el feed usa toda la altura del contenedor (para 2 columnas sin scroll de página) */
+  fillHeight?: boolean;
 }
 
-export function ActivityFeed({ projectLogos }: ActivityFeedProps = {}) {
+export function ActivityFeed({ projectLogos, fillHeight }: ActivityFeedProps = {}) {
   const [actividades, setActividades] = useState<ActivityFeedItem[]>([]);
   const [projectLogosFromApi, setProjectLogosFromApi] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ export function ActivityFeed({ projectLogos }: ActivityFeedProps = {}) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-[var(--border)] p-4">
+      <div className={`p-4 flex flex-col ${fillHeight ? 'h-full' : 'rounded-xl border border-[var(--border)]'}`}>
         <div className="animate-pulse space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-14 bg-[var(--bg-secondary)] rounded-lg flex items-center gap-3">
@@ -104,15 +106,15 @@ export function ActivityFeed({ projectLogos }: ActivityFeedProps = {}) {
   }
 
   return (
-    <div className="rounded-xl border border-[var(--border)] overflow-hidden">
-      <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+    <div className={`overflow-hidden flex flex-col ${fillHeight ? 'h-full' : 'rounded-xl border border-[var(--border)]'}`}>
+      <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between shrink-0">
         <span className="font-medium text-sm">Actividad</span>
         <span className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--status-ok)' }}></span>
           live
         </span>
       </div>
-      <div className="max-h-[400px] overflow-y-auto">
+      <div className={fillHeight ? 'flex-1 min-h-0 overflow-y-auto' : 'max-h-[400px] overflow-y-auto'}>
         {actividades.length === 0 ? (
           <div className="px-4 py-6 text-center text-sm text-[var(--text-muted)]">
             Sin actividad reciente. Las acciones de tus proyectos aparecerán aquí.

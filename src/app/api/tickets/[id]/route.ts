@@ -24,13 +24,18 @@ export async function GET(
 
     const supabase = getSupabase();
     const selectWithLogo = 'id, numero, proyecto_id, proyecto_nombre, logo_url, modulo, tienda, titulo, descripcion, estado, prioridad, creado_por_nombre, creado_por_email, created_at, updated_at, resolved_at';
-    const selectWithoutLogo = 'id, numero, proyecto_id, proyecto_nombre, modulo, tienda, titulo, descripcion, estado, creado_por_nombre, creado_por_email, created_at, updated_at, resolved_at';
+    // Sin logo_url pero con prioridad (fallback cuando la columna logo_url no existe)
+    const selectWithPrioridadSinLogo = 'id, numero, proyecto_id, proyecto_nombre, modulo, tienda, titulo, descripcion, estado, prioridad, creado_por_nombre, creado_por_email, created_at, updated_at, resolved_at';
+    // Sin prioridad (fallback cuando la columna prioridad no existe)
+    const selectSinPrioridad = 'id, numero, proyecto_id, proyecto_nombre, modulo, tienda, titulo, descripcion, estado, creado_por_nombre, creado_por_email, created_at, updated_at, resolved_at';
 
     let result = await supabase.from('tickets').select(selectWithLogo).eq('id', id).single();
 
-    // Si la columna logo_url o prioridad no existe (migración no aplicada), volver a buscar sin ellas
-    if (result.error && (result.error.message?.includes('logo_url') || result.error.message?.includes('prioridad'))) {
-      result = await supabase.from('tickets').select(selectWithoutLogo).eq('id', id).single();
+    if (result.error && result.error.message?.includes('logo_url')) {
+      result = await supabase.from('tickets').select(selectWithPrioridadSinLogo).eq('id', id).single();
+    }
+    if (result.error && result.error.message?.includes('prioridad')) {
+      result = await supabase.from('tickets').select(selectSinPrioridad).eq('id', id).single();
     }
 
     if (result.error || !result.data) {

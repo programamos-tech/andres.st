@@ -216,36 +216,43 @@ export default function BackstageDashboard() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Proyectos</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {proyectos.map((p) => (
-                  <ProyectoCard key={p.id} proyecto={p} apiHealth={healthByProjectId[p.id]} />
-                ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)] min-h-[420px]">
+            <section className="flex flex-col min-h-0">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-3 shrink-0">Actividad</h2>
+              <div className="flex-1 min-h-0 rounded-xl border border-[var(--border)] overflow-hidden">
+                <ActivityFeed
+                  fillHeight
+                  projectLogos={proyectos.reduce(
+                    (acc, p) => {
+                      const logo = p.logo_url?.trim() || null;
+                      const isZonat = p.nombre_cliente === 'ZonaT' || p.nombre_proyecto?.toLowerCase().includes('zonat');
+                      return { ...acc, [p.id]: logo || (isZonat ? '/zonat.png' : null) };
+                    },
+                    {} as Record<string, string | null>
+                  )}
+                />
+              </div>
+            </section>
+            <section className="flex flex-col min-h-0">
+              <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
+                <h2 className="text-sm font-medium text-[var(--text-muted)]">Proyectos</h2>
                 <button
                   type="button"
                   onClick={() => setCreateOpen(true)}
-                  className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-[var(--text-muted)]/60 hover:border-[var(--text-muted)] hover:bg-[var(--bg)]/50 transition-colors text-[var(--text-muted)] hover:text-[var(--text)] min-h-[120px]"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-[var(--text-muted)]/60 hover:border-[var(--text-muted)] hover:bg-[var(--bg)]/50 transition-colors text-xs text-[var(--text-muted)] hover:text-[var(--text)]"
                 >
                   <IconPlus />
-                  <span className="text-sm">Crear proyecto</span>
+                  <span>Crear proyecto</span>
                 </button>
               </div>
-            </div>
-            <div>
-              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-4">Actividad</h2>
-              <ActivityFeed
-                projectLogos={proyectos.reduce(
-                  (acc, p) => {
-                    const logo = p.logo_url?.trim() || null;
-                    const isZonat = p.nombre_cliente === 'ZonaT' || p.nombre_proyecto?.toLowerCase().includes('zonat');
-                    return { ...acc, [p.id]: logo || (isZonat ? '/zonat.png' : null) };
-                  },
-                  {} as Record<string, string | null>
-                )}
-              />
-            </div>
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pr-1">
+                  {proyectos.map((p) => (
+                    <ProyectoCard key={p.id} proyecto={p} apiHealth={healthByProjectId[p.id]} />
+                  ))}
+                </div>
+              </div>
+            </section>
           </div>
         )}
 
