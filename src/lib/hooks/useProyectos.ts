@@ -161,7 +161,19 @@ export function useProyectos(refreshInterval = 30000) {
   }, []);
 
   useEffect(() => {
-    fetchProyectos();
+    let loadingStuck = true;
+    const fallbackTimer = setTimeout(() => {
+      if (loadingStuck) {
+        loadingStuck = false;
+        setProyectos(MOCK_PROYECTOS);
+        setIsDemo(true);
+        setLoading(false);
+      }
+    }, 12000);
+
+    fetchProyectos().then(() => {
+      loadingStuck = false;
+    });
 
     const interval = setInterval(fetchProyectos, refreshInterval);
 
@@ -182,6 +194,8 @@ export function useProyectos(refreshInterval = 30000) {
     }
 
     return () => {
+      clearTimeout(fallbackTimer);
+      loadingStuck = false;
       clearInterval(interval);
       if (channel && supabase) {
         supabase.removeChannel(channel);

@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
-
 interface ChatListItem {
   id: string;
   creado_por_email: string;
@@ -98,8 +96,6 @@ export default function BackstageAndrebotPage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
-        <BackstageSubNav showStats={false} />
-
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>

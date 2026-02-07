@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { BRAND } from '@/lib/constants';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { HomeNav } from '@/components/HomeNav';
+import { VideoFromMidpoint } from '@/components/VideoFromMidpoint';
+import { ScrollToCenterVideo } from '@/components/ScrollToCenterVideo';
 
 /** Logos de las marcas que trabajan conmigo */
 const CLIENT_LOGOS = [
@@ -90,31 +92,58 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Sistema a la medida en acción */}
-      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
-        <div className="max-w-6xl mx-auto">
+      {/* Sistema a la medida en acción — scroll horizontal con 3 proyectos */}
+      <section className="py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-8">
           <ScrollReveal>
             <h2 className="hero-heading text-center text-2xl md:text-3xl text-[var(--text)] mb-4 tracking-tight">
               Un sistema a la medida en acción
             </h2>
-            <p className="text-center text-[var(--text-muted)] mb-10 text-lg">
-              Así puede verse un sistema hecho para tu negocio: a tu ritmo, con lo que necesitás.
+            <p className="text-center text-[var(--text-muted)] text-lg">
+              Así puede verse un sistema hecho para tu negocio: a tu ritmo, con lo que necesitás. Deslizá a los lados para ver más proyectos.
             </p>
-            <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
-              <video
-                className="w-full h-full object-contain"
-                controls
-                playsInline
-                loop
-                preload="metadata"
-              >
-                <source src={encodeURI('/video-bg (2).mp4')} type="video/mp4" />
-                <source src="/sistema.mov" type="video/quicktime" />
-                Tu navegador no soporta la reproducción del video.
-              </video>
-            </div>
           </ScrollReveal>
         </div>
+        <ScrollReveal>
+          <ScrollToCenterVideo centerIndex={1}>
+            {/* Zonat — izquierda */}
+            <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
+              <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
+                <VideoFromMidpoint
+                  src="/zpnat.mp4"
+                  title="Proyecto Zonat"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p className="text-center text-sm text-[var(--text-muted)] mt-2">Zonat</p>
+            </div>
+            {/* Rogerbox — centro */}
+            <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
+              <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
+                <VideoFromMidpoint
+                  src="/rogerbox.mp4"
+                  title="Proyecto Rogerbox"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p className="text-center text-sm text-[var(--text-muted)] mt-2">Rogerbox</p>
+            </div>
+            {/* Aleyashop — derecha */}
+            <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
+              <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
+                <VideoFromMidpoint
+                  title="Aleyashop"
+                  className="w-full h-full object-contain"
+                >
+                  <source src={encodeURI('/video-bg (2).mp4')} type="video/mp4" />
+                  <source src="/sistema.mov" type="video/quicktime" />
+                  Tu navegador no soporta la reproducción del video.
+                </VideoFromMidpoint>
+              </div>
+              <p className="text-center text-sm text-[var(--text-muted)] mt-2">Aleyashop</p>
+            </div>
+          </ScrollToCenterVideo>
+        </ScrollReveal>
       </section>
 
       {/* Preguntas frecuentes */}

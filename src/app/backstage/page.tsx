@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useProyectos } from '@/lib/hooks/useProyectos';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import { ProyectoCard } from '@/components/dashboard/ProyectoCard';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
@@ -66,7 +65,9 @@ export default function BackstageDashboard() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/backstage/tickets')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    fetch('/api/backstage/tickets', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { tickets?: TicketPreview[] }) => {
         if (!cancelled && Array.isArray(data.tickets)) {
@@ -77,9 +78,14 @@ export default function BackstageDashboard() {
         if (!cancelled) setTicketsList([]);
       })
       .finally(() => {
+        clearTimeout(timeoutId);
         if (!cancelled) setTicketsLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   const projectIds = proyectos.map((p) => p.id).sort().join(',');
@@ -141,14 +147,6 @@ export default function BackstageDashboard() {
   return (
     <BackstageGuard>
     <div className="min-h-screen bg-[var(--bg-secondary)]">
-      <BackstageSubNav
-        totalProyectos={proyectos.length}
-        proyectosActivos={activos}
-        proyectosConErrores={errores}
-        onRefresh={refetch}
-        isDemo={isDemo}
-      />
-      
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Tickets (Andrebot) — todos por orden de llegada */}
         <div className="mb-8">

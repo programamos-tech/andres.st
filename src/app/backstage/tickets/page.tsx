@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import type { TicketEstado } from '@/types/database';
 
 export type TicketPrioridad = 'medio' | 'alto_maromas' | 'alto_espera' | 'urgente';
@@ -124,13 +123,18 @@ export default function BackstageTicketsPage() {
 
   const fetchList = useCallback(() => {
     setLoading(true);
-    fetch('/api/backstage/tickets')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    fetch('/api/backstage/tickets', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { tickets?: TicketListItem[] }) => {
         setTickets(Array.isArray(data.tickets) ? data.tickets : []);
       })
       .catch(() => setTickets([]))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -192,8 +196,6 @@ export default function BackstageTicketsPage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
-        <BackstageSubNav showStats={false} />
-
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <div>

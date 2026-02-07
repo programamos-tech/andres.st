@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import React from 'react';
-import { renderToBuffer } from '@react-pdf/renderer';
-import { CotizacionPDF } from '@/components/cotizaciones/CotizacionPDF';
 import {
   SISTEMAS_BASE,
   PLANES_SOPORTE,
@@ -49,7 +47,15 @@ function fechaFormato(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as Body;
+    let body: Body;
+    try {
+      body = (await request.json()) as Body;
+    } catch {
+      return NextResponse.json(
+        { error: 'Cuerpo de la petición inválido (JSON)' },
+        { status: 400 }
+      );
+    }
     const cliente = body.cliente ?? {};
     const sistema = SISTEMAS_BASE.find((s) => s.id === body.sistemaBaseId);
     const formaPago = FORMAS_PAGO.find((f) => f.id === body.formaPagoId);
@@ -85,52 +91,54 @@ export async function POST(request: NextRequest) {
       // Sin avatar si el archivo no existe
     }
 
-    const doc = React.createElement(CotizacionPDF, {
-        numeroCotizacion: numero,
-        fecha,
-        cliente: {
-          nombreNegocio: cliente.nombreNegocio || 'Cliente',
-          contacto: cliente.contacto || '',
-          email: cliente.email || '',
-          whatsapp: cliente.whatsapp || '',
-          tipoNegocio: tipoNegocioLabel || cliente.tipoNegocio || '',
-        },
-        sistema: {
-          nombre: sistema.nombre,
-          tiempoSemanas: sistema.tiempoSemanas,
-          incluye: sistema.incluye,
-        },
-        desgloseModulos: totals.desgloseModulos.map((m) => ({ nombre: m.nombre, precio: m.precio })),
-        desgloseServicios: totals.desgloseServicios.map((s) => ({
-          nombre: s.nombre,
-          precio: s.precio,
-          label: s.label,
-        })),
-        formaPago: { nombre: formaPago.nombre },
-        subtotalSistema: totals.subtotalSistema,
-        subtotal: totals.subtotal,
-        descuento: totals.descuento,
-        recargo: totals.recargo,
-        total: totals.total,
-        planSoporte:
-          planSoporte && planSoporte.precioMensual > 0
-            ? {
-                nombre: planSoporte.nombre,
-                precioMensual: planSoporte.precioMensual,
-                incluye: planSoporte.incluye,
-              }
-            : undefined,
-        marca: {
-          name: BRAND.name,
-          username: BRAND.username,
-          location: BRAND.location,
-          whatsapp: BRAND.whatsapp,
-          email: BRAND.email,
-        },
-        avatarBase64,
-      });
-    // renderToBuffer expects Document root; CotizacionPDF returns <Document>...</Document>
-    const buffer = await renderToBuffer(doc as Parameters<typeof renderToBuffer>[0]);
+
+    const { renderToBuffer } = await import('@react-pdf/renderer');
+    const { CotizacionPDF } = await import('@/components/cotizaciones/CotizacionPDF');
+    const docEl = React.createElement(CotizacionPDF, {
+      numeroCotizacion: numero,
+      fecha,
+      cliente: {
+        nombreNegocio: cliente.nombreNegocio || 'Cliente',
+        contacto: cliente.contacto || '',
+        email: cliente.email || '',
+        whatsapp: cliente.whatsapp || '',
+        tipoNegocio: tipoNegocioLabel || cliente.tipoNegocio || '',
+      },
+      sistema: {
+        nombre: sistema.nombre,
+        tiempoSemanas: sistema.tiempoSemanas,
+        incluye: sistema.incluye,
+      },
+      desgloseModulos: totals.desgloseModulos.map((m) => ({ nombre: m.nombre, precio: m.precio })),
+      desgloseServicios: totals.desgloseServicios.map((s) => ({
+        nombre: s.nombre,
+        precio: s.precio,
+        label: s.label,
+      })),
+      formaPago: { nombre: formaPago.nombre },
+      subtotalSistema: totals.subtotalSistema,
+      subtotal: totals.subtotal,
+      descuento: totals.descuento,
+      recargo: totals.recargo,
+      total: totals.total,
+      planSoporte:
+        planSoporte && planSoporte.precioMensual > 0
+          ? {
+              nombre: planSoporte.nombre,
+              precioMensual: planSoporte.precioMensual,
+              incluye: planSoporte.incluye,
+            }
+          : undefined,
+      marca: {
+        name: BRAND.name,
+        username: BRAND.username,
+        location: BRAND.location,
+        whatsapp: BRAND.whatsapp,
+        email: BRAND.email,
+      },
+      avatarBase64,
+    });
+    const buffer = await renderToBuffer(docEl as Parameters<typeof renderToBuffer>[0]);
 
     const filename = `${numero}.pdf`;
     return new Response(new Uint8Array(buffer), {

@@ -1,4 +1,5 @@
 import { HomeNav } from '@/components/HomeNav';
+import { BackstageLayoutClient } from './BackstageLayoutClient';
 
 export default function BackstageLayout({
   children,
@@ -8,7 +9,7 @@ export default function BackstageLayout({
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg)]">
       <HomeNav />
-      {children}
+      <BackstageLayoutClient>{children}</BackstageLayoutClient>
     </div>
   );
 }

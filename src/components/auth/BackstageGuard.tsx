@@ -9,15 +9,10 @@ interface BackstageGuardProps {
 
 export function BackstageGuard({ children }: BackstageGuardProps) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
 
     const auth = localStorage.getItem('backstage_auth');
 
@@ -45,9 +40,9 @@ export function BackstageGuard({ children }: BackstageGuardProps) {
       setIsAuthenticated(false);
       router.replace('/backstage/login');
     }
-  }, [mounted, router]);
+  }, [router]);
 
-  if (!mounted || isAuthenticated === null) {
+  if (isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
         <div className="text-[var(--text-muted)] text-sm">Verificando acceso...</div>
@@ -61,3 +56,4 @@ export function BackstageGuard({ children }: BackstageGuardProps) {
 
   return <>{children}</>;
 }
+

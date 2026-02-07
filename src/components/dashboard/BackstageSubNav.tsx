@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { href: '/backstage/actividades', label: 'Actividades' },
   { href: '/backstage/tickets', label: 'Tickets' },
   { href: '/backstage/andrebot', label: 'Andrebot' },
-  { href: '/cotizaciones', label: 'Cotizaciones' },
+  { href: '/backstage/cotizaciones', label: 'Cotizaciones' },
 ];
 
 export function BackstageSubNav({
@@ -57,6 +57,7 @@ export function BackstageSubNav({
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href !== '/backstage/cotizaciones'}
                   className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                     isActive ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
                   }`}

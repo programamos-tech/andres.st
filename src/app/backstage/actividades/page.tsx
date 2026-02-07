@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
 import { useProyectos } from '@/lib/hooks/useProyectos';
 
@@ -55,7 +54,10 @@ export default function ActividadesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/backstage/activity-feed')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    fetch('/api/backstage/activity-feed', { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { feed?: ActivityFeedItem[]; project_logos?: Record<string, string | null> } | ActivityFeedItem[]) => {
         if (cancelled) return;
@@ -71,9 +73,14 @@ export default function ActividadesPage() {
         if (!cancelled) setActividades([]);
       })
       .finally(() => {
+        clearTimeout(timeoutId);
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   const actividadesFiltradas = filtro === 'errores' ? actividades.filter((a) => a.es_error) : actividades;
@@ -84,15 +91,6 @@ export default function ActividadesPage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg-secondary)]">
-        <BackstageSubNav
-          totalProyectos={proyectos.length}
-          proyectosActivos={activos}
-          proyectosConErrores={erroresProyectos}
-          onRefresh={() => window.location.reload()}
-          isDemo={!proyectos.length && !loadingProyectos}
-          showStats={true}
-        />
-
         <main className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-bold text-[var(--text)]">Actividades</h1>
