@@ -43,6 +43,15 @@ const IconActivity = () => (
   </svg>
 );
 
+/** Nombre del módulo para mostrar (sales → ventas, etc.) */
+function moduleDisplayName(modulo: string): string {
+  if (!modulo || typeof modulo !== 'string') return modulo;
+  const m = modulo.toLowerCase();
+  if (m === 'sales') return 'ventas';
+  if (m === 'auth' || m === 'login') return 'auth';
+  return modulo;
+}
+
 export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
   const statusColor = {
     active: 'bg-[var(--status-ok)]',
@@ -111,8 +120,8 @@ export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
           <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-1">Módulos más usados</p>
           <div className="flex flex-wrap gap-1">
             {proyecto.top_modulos.slice(0, 3).map((m) => (
-              <span key={m.modulo} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]">
-                {m.modulo} · {m.total_usos}
+              <span key={m.modulo} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-secondary)] text-[var(--text-muted)]" title={`${m.total_usos} acciones en este módulo en la última hora`}>
+                {moduleDisplayName(m.modulo)} · {m.total_usos} usos
               </span>
             ))}
           </div>

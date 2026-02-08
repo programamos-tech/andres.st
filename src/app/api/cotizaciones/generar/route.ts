@@ -1,31 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
-import React from 'react';
 import {
   SISTEMAS_BASE,
-  PLANES_SOPORTE,
   FORMAS_PAGO,
   TIPOS_NEGOCIO,
   calcularCotizacion,
 } from '@/lib/cotizaciones-data';
-import { BRAND } from '@/lib/constants';
+import { createServerClient } from '@/lib/supabase/client';
+import { renderPropuestaPdf, type PropuestaPayload } from '@/lib/cotizaciones-render-pdf';
 
-type Body = {
-  cliente: {
-    nombreNegocio?: string;
-    contacto?: string;
-    email?: string;
-    whatsapp?: string;
-    tipoNegocio?: string;
-  };
-  sistemaBaseId: string;
-  modulosIds: string[];
-  planSoporteId: string;
-  formaPagoId: string;
-  serviciosIds: string[];
-  mesesHosting?: number;
-};
+export const runtime = 'nodejs';
 
 function numeroCotizacion(): string {
   const now = new Date();
@@ -47,9 +30,9 @@ function fechaFormato(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    let body: Body;
+    let body: PropuestaPayload;
     try {
-      body = (await request.json()) as Body;
+      body = (await request.json()) as PropuestaPayload;
     } catch {
       return NextResponse.json(
         { error: 'Cuerpo de la petición inválido (JSON)' },
@@ -59,8 +42,6 @@ export async function POST(request: NextRequest) {
     const cliente = body.cliente ?? {};
     const sistema = SISTEMAS_BASE.find((s) => s.id === body.sistemaBaseId);
     const formaPago = FORMAS_PAGO.find((f) => f.id === body.formaPagoId);
-    const planSoporte = PLANES_SOPORTE.find((p) => p.id === body.planSoporteId);
-
     if (!sistema || !formaPago) {
       return NextResponse.json(
         { error: 'Sistema base o forma de pago no válidos' },
@@ -74,85 +55,67 @@ export async function POST(request: NextRequest) {
       formaPago,
       serviciosIds: body.serviciosIds ?? [],
       mesesHosting: body.serviciosIds?.includes('hosting') ? body.mesesHosting ?? 12 : undefined,
+      modulosDescuento: body.modulosDescuento,
+      serviciosDescuento: body.serviciosDescuento,
+      descuentoPorcentajeOverride: body.descuentoPorcentajeOverride,
     });
-
     const tipoNegocioLabel =
       body.cliente?.tipoNegocio && TIPOS_NEGOCIO.find((t) => t.id === body.cliente!.tipoNegocio)?.nombre;
 
     const numero = numeroCotizacion();
     const fecha = fechaFormato();
+    const buffer = await renderPropuestaPdf(body, { numero, fecha });
 
-    let avatarBase64: string | undefined;
-    try {
-      const avatarPath = path.join(process.cwd(), 'public', BRAND.avatar.replace(/^\//, ''));
-      const avatarBuffer = await readFile(avatarPath);
-      avatarBase64 = `data:image/jpeg;base64,${avatarBuffer.toString('base64')}`;
-    } catch {
-      // Sin avatar si el archivo no existe
-    }
-
-
-    const { renderToBuffer } = await import('@react-pdf/renderer');
-    const { CotizacionPDF } = await import('@/components/cotizaciones/CotizacionPDF');
-    const docEl = React.createElement(CotizacionPDF, {
-      numeroCotizacion: numero,
-      fecha,
-      cliente: {
-        nombreNegocio: cliente.nombreNegocio || 'Cliente',
-        contacto: cliente.contacto || '',
-        email: cliente.email || '',
-        whatsapp: cliente.whatsapp || '',
-        tipoNegocio: tipoNegocioLabel || cliente.tipoNegocio || '',
-      },
-      sistema: {
-        nombre: sistema.nombre,
-        tiempoSemanas: sistema.tiempoSemanas,
-        incluye: sistema.incluye,
-      },
-      desgloseModulos: totals.desgloseModulos.map((m) => ({ nombre: m.nombre, precio: m.precio })),
-      desgloseServicios: totals.desgloseServicios.map((s) => ({
-        nombre: s.nombre,
-        precio: s.precio,
-        label: s.label,
-      })),
-      formaPago: { nombre: formaPago.nombre },
-      subtotalSistema: totals.subtotalSistema,
-      subtotal: totals.subtotal,
-      descuento: totals.descuento,
-      recargo: totals.recargo,
-      total: totals.total,
-      planSoporte:
-        planSoporte && planSoporte.precioMensual > 0
-          ? {
-              nombre: planSoporte.nombre,
-              precioMensual: planSoporte.precioMensual,
-              incluye: planSoporte.incluye,
-            }
-          : undefined,
-      marca: {
-        name: BRAND.name,
-        username: BRAND.username,
-        location: BRAND.location,
-        whatsapp: BRAND.whatsapp,
-        email: BRAND.email,
-      },
-      avatarBase64,
-    });
-    const buffer = await renderToBuffer(docEl as Parameters<typeof renderToBuffer>[0]);
+    const clienteNombre = cliente.nombreNegocio || 'Cliente';
+    const supabase = createServerClient();
+    const { data: propuesta, error: insertError } = await supabase
+      .from('propuestas')
+      .insert({
+        numero_cotizacion: numero,
+        cliente_nombre: clienteNombre,
+        cliente_contacto: cliente.contacto || null,
+        cliente_email: cliente.email || null,
+        cliente_whatsapp: cliente.whatsapp || null,
+        cliente_tipo_negocio: tipoNegocioLabel || cliente.tipoNegocio || null,
+        sistema_nombre: sistema.nombre,
+        total_cop: totals.total,
+        estado: 'enviada',
+        payload: {
+          cliente: body.cliente,
+          sistemaBaseId: body.sistemaBaseId,
+          modulosIds: body.modulosIds ?? [],
+          planSoporteId: body.planSoporteId,
+          formaPagoId: body.formaPagoId,
+          serviciosIds: body.serviciosIds ?? [],
+          mesesHosting: body.serviciosIds?.includes('hosting') ? body.mesesHosting ?? 12 : undefined,
+          modulosDescuento: body.modulosDescuento,
+          serviciosDescuento: body.serviciosDescuento,
+          descuentoPorcentajeOverride: body.descuentoPorcentajeOverride,
+        },
+      })
+      .select('id')
+      .single();
 
     const filename = `${numero}.pdf`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'X-Cotizacion-Numero': numero,
+    };
+    if (!insertError && propuesta?.id) headers['X-Propuesta-Id'] = propuesta.id;
+
     return new Response(new Uint8Array(buffer), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'X-Cotizacion-Numero': numero,
-      },
+      headers,
     });
   } catch (e) {
-    console.error('Error generando cotización PDF:', e);
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error('Error generando cotización PDF:', err.message, err.stack);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Error al generar la cotización' },
+      {
+        error: err.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+      },
       { status: 500 }
     );
   }

@@ -17,7 +17,12 @@ export function ScrollToCenterVideo({
     if (!el) return;
     const child = el.children[centerIndex] as HTMLElement | undefined;
     if (child) {
-      child.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
+      // Solo desplazamos horizontalmente el carrusel para centrar el video.
+      // No usamos scrollIntoView para no provocar scroll vertical de la página.
+      const containerWidth = el.clientWidth;
+      const childLeft = child.offsetLeft;
+      const childWidth = child.offsetWidth;
+      el.scrollLeft = Math.max(0, childLeft - containerWidth / 2 + childWidth / 2);
     }
   }, [centerIndex]);
 

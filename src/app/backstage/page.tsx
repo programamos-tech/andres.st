@@ -215,23 +215,8 @@ export default function BackstageDashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)] min-h-[420px]">
-            <section className="flex flex-col min-h-0">
-              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-3 shrink-0">Actividad</h2>
-              <div className="flex-1 min-h-0 rounded-xl border border-[var(--border)] overflow-hidden">
-                <ActivityFeed
-                  fillHeight
-                  projectLogos={proyectos.reduce(
-                    (acc, p) => {
-                      const logo = p.logo_url?.trim() || null;
-                      const isZonat = p.nombre_cliente === 'ZonaT' || p.nombre_proyecto?.toLowerCase().includes('zonat');
-                      return { ...acc, [p.id]: logo || (isZonat ? '/zonat.png' : null) };
-                    },
-                    {} as Record<string, string | null>
-                  )}
-                />
-              </div>
-            </section>
-            <section className="flex flex-col min-h-0">
+            {/* En mobile/tablet: Proyectos primero, Actividad abajo. En desktop (lg): Actividad izquierda (order-1), Proyectos derecha (order-2). */}
+            <section className="flex flex-col min-h-0 lg:order-2">
               <div className="flex items-center justify-between gap-3 mb-3 shrink-0">
                 <h2 className="text-sm font-medium text-[var(--text-muted)]">Proyectos</h2>
                 <button
@@ -249,6 +234,22 @@ export default function BackstageDashboard() {
                     <ProyectoCard key={p.id} proyecto={p} apiHealth={healthByProjectId[p.id]} />
                   ))}
                 </div>
+              </div>
+            </section>
+            <section className="flex flex-col min-h-0 lg:order-1">
+              <h2 className="text-sm font-medium text-[var(--text-muted)] mb-3 shrink-0">Actividad</h2>
+              <div className="flex-1 min-h-0 rounded-xl border border-[var(--border)] overflow-hidden">
+                <ActivityFeed
+                  fillHeight
+                  projectLogos={proyectos.reduce(
+                    (acc, p) => {
+                      const logo = p.logo_url?.trim() || null;
+                      const isZonat = p.nombre_cliente === 'ZonaT' || p.nombre_proyecto?.toLowerCase().includes('zonat');
+                      return { ...acc, [p.id]: logo || (isZonat ? '/zonat.png' : null) };
+                    },
+                    {} as Record<string, string | null>
+                  )}
+                />
               </div>
             </section>
           </div>

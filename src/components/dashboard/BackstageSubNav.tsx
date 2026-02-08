@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { href: '/backstage/actividades', label: 'Actividades' },
   { href: '/backstage/tickets', label: 'Tickets' },
   { href: '/backstage/andrebot', label: 'Andrebot' },
-  { href: '/backstage/cotizaciones', label: 'Cotizaciones' },
+  { href: '/backstage/cotizaciones', label: 'Propuestas' },
 ];
 
 export function BackstageSubNav({
@@ -34,47 +34,80 @@ export function BackstageSubNav({
 }: BackstageSubNavProps) {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   const cerrarSesion = () => {
     localStorage.removeItem('backstage_auth');
     window.location.href = '/';
   };
 
+  const navLinks = (
+    <>
+      {NAV_ITEMS.map((item) => {
+        const isActive =
+          pathname === item.href || (item.href !== '/backstage' && pathname?.startsWith(item.href));
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch={item.href !== '/backstage/cotizaciones'}
+            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              isActive ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+            }`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+
   return (
-    <header className={contained ? 'border-b border-[var(--border)] py-3 bg-[var(--bg)]' : 'border-b border-[var(--border)] px-6 py-3 bg-[var(--bg)]'}>
+    <header className={`relative ${contained ? 'border-b border-[var(--border)] py-3 bg-[var(--bg)]' : 'border-b border-[var(--border)] px-4 sm:px-6 py-3 bg-[var(--bg)]'}`}>
       <div className={contained ? 'flex items-center justify-between' : 'max-w-7xl mx-auto flex items-center justify-between'}>
-        <div className="flex items-center gap-6">
-          <nav className="flex items-center gap-1">
-            {NAV_ITEMS.map((item) => {
-              const isActive =
-                pathname === item.href || (item.href !== '/backstage' && pathname?.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch={item.href !== '/backstage/cotizaciones'}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                    isActive ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+        <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+          {/* Desktop/tablet: nav horizontal */}
+          <nav className="hidden lg:flex items-center gap-1 shrink-0">
+            {navLinks}
           </nav>
+          {/* Mobile: menú hamburguesa */}
+          <div className="flex lg:hidden items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="p-2 rounded-lg border border-[var(--border)] hover:border-[var(--text-muted)] transition-colors text-[var(--text-muted)] hover:text-[var(--text)]"
+              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+            <span className="text-xs text-[var(--text-muted)] font-mono sm:hidden">{format(currentTime, 'HH:mm')}</span>
+          </div>
           {isDemo && (
-            <span className="text-xs px-2 py-1 rounded-full border border-[var(--border)] text-[var(--text-muted)]">
+            <span className="text-xs px-2 py-1 rounded-full border border-[var(--border)] text-[var(--text-muted)] shrink-0">
               demo
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-6 shrink-0">
           {showStats && (
             <div className="hidden lg:flex items-center gap-4 text-xs text-[var(--text-muted)]">
               <span>{totalProyectos} proyectos</span>
@@ -109,6 +142,30 @@ export function BackstageSubNav({
           </button>
         </div>
       </div>
+
+      {/* Panel móvil/tablet: links en columna */}
+      {menuOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 z-40 bg-[var(--bg)] border-b border-[var(--border)] px-4 py-3 shadow-[var(--shadow-mid)]">
+          <nav className="flex flex-col gap-0.5 max-w-7xl mx-auto">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href || (item.href !== '/backstage' && pathname?.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-secondary)]'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

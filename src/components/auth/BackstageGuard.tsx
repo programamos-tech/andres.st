@@ -19,27 +19,31 @@ export function BackstageGuard({ children }: BackstageGuardProps) {
     if (!auth) {
       setIsAuthenticated(false);
       router.replace('/backstage/login');
-      return;
-    }
-
-    try {
-      const authData = JSON.parse(auth);
-      const maxAge = 24 * 60 * 60 * 1000;
-      if (Date.now() - authData.timestamp > maxAge) {
+    } else {
+      try {
+        const authData = JSON.parse(auth);
+        const maxAge = 24 * 60 * 60 * 1000;
+        if (Date.now() - authData.timestamp > maxAge) {
+          localStorage.removeItem('backstage_auth');
+          setIsAuthenticated(false);
+          router.replace('/backstage/login');
+        } else {
+          setIsAuthenticated(authData.authenticated === true);
+          if (authData.authenticated !== true) {
+            router.replace('/backstage/login');
+          }
+        }
+      } catch {
         localStorage.removeItem('backstage_auth');
         setIsAuthenticated(false);
         router.replace('/backstage/login');
-        return;
       }
-      setIsAuthenticated(authData.authenticated === true);
-      if (authData.authenticated !== true) {
-        router.replace('/backstage/login');
-      }
-    } catch {
-      localStorage.removeItem('backstage_auth');
-      setIsAuthenticated(false);
-      router.replace('/backstage/login');
     }
+
+    const fallback = setTimeout(() => {
+      setIsAuthenticated((prev) => (prev === null ? false : prev));
+    }, 2500);
+    return () => clearTimeout(fallback);
   }, [router]);
 
   if (isAuthenticated === null) {

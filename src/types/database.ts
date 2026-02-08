@@ -106,6 +106,51 @@ export interface Database {
           timestamp?: string
         }
       }
+      propuestas: {
+        Row: {
+          id: string
+          numero_cotizacion: string
+          cliente_nombre: string
+          cliente_contacto: string | null
+          cliente_email: string | null
+          cliente_whatsapp: string | null
+          cliente_tipo_negocio: string | null
+          sistema_nombre: string
+          total_cop: number
+          estado: 'enviada' | 'vista' | 'aceptada' | 'rechazada' | 'expirada'
+          payload: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          numero_cotizacion: string
+          cliente_nombre: string
+          cliente_contacto?: string | null
+          cliente_email?: string | null
+          cliente_whatsapp?: string | null
+          cliente_tipo_negocio?: string | null
+          sistema_nombre: string
+          total_cop: number
+          estado?: 'enviada' | 'vista' | 'aceptada' | 'rechazada' | 'expirada'
+          payload: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          numero_cotizacion?: string
+          cliente_nombre?: string
+          cliente_contacto?: string | null
+          cliente_email?: string | null
+          cliente_whatsapp?: string | null
+          cliente_tipo_negocio?: string | null
+          sistema_nombre?: string
+          total_cop?: number
+          estado?: 'enviada' | 'vista' | 'aceptada' | 'rechazada' | 'expirada'
+          payload?: Json
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -124,6 +169,9 @@ export type ProyectoMaestro = Database['public']['Tables']['proyectos_maestros']
 export type ActividadCentralizada = Database['public']['Tables']['actividad_centralizada']['Row']
 export type InsertProyecto = Database['public']['Tables']['proyectos_maestros']['Insert']
 export type InsertActividad = Database['public']['Tables']['actividad_centralizada']['Insert']
+
+export type PropuestaRow = Database['public']['Tables']['propuestas']['Row']
+export type PropuestaEstado = PropuestaRow['estado']
 
 // Tickets
 export type TicketEstado = 'creado' | 'replicando' | 'ajustando' | 'probando' | 'desplegando' | 'resuelto';
