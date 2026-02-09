@@ -6,8 +6,8 @@ import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
 import { TicketChat } from '@/components/ticket/TicketChat';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 import type { TicketEstado } from '@/types/database';
 
 interface TicketData {
@@ -90,6 +90,7 @@ const PRIORIDAD_STYLES: Record<string, string> = {
 
 export default function BackstageTicketPage() {
   const params = useParams();
+  const { maskUser } = useMaskSensitiveData();
   const ticketId = params.id as string;
   const [ticket, setTicket] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +145,6 @@ export default function BackstageTicketPage() {
     return (
       <BackstageGuard>
         <div className="min-h-screen bg-[var(--bg-secondary)]">
-          <BackstageSubNav showStats={false} />
           <main className="max-w-6xl mx-auto px-6 py-8">
             <div className="animate-pulse h-64 rounded-xl bg-[var(--bg)] border border-[var(--border)]" />
           </main>
@@ -157,7 +157,6 @@ export default function BackstageTicketPage() {
     return (
       <BackstageGuard>
         <div className="min-h-screen bg-[var(--bg-secondary)]">
-          <BackstageSubNav showStats={false} />
           <main className="max-w-6xl mx-auto px-6 py-8">
             <p className="text-[var(--text-muted)]">Ticket no encontrado.</p>
             <Link href="/backstage" className="text-sm text-[var(--text)] hover:underline mt-2 inline-block">
@@ -176,8 +175,6 @@ export default function BackstageTicketPage() {
   return (
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg-secondary)]">
-        <BackstageSubNav showStats={false} />
-
         <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <Link
@@ -239,13 +236,13 @@ export default function BackstageTicketPage() {
                   )}
                   <div>
                     <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">Solicitado por</dt>
-                    <dd className="text-sm font-medium text-[var(--text)]">{ticket.creado_por_nombre}</dd>
+                    <dd className="text-sm font-medium text-[var(--text)]">{maskUser(ticket.creado_por_nombre)}</dd>
                   </div>
                   {ticket.creado_por_email && (
                     <div>
                       <dt className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-0.5">Correo</dt>
                       <dd className="text-sm">
-                        <a href={`mailto:${ticket.creado_por_email}`} className="text-[var(--text)] font-medium hover:underline break-all">{ticket.creado_por_email}</a>
+                        <a href={`mailto:${ticket.creado_por_email}`} className="text-[var(--text)] font-medium hover:underline break-all">{maskUser(ticket.creado_por_email)}</a>
                       </dd>
                     </div>
                   )}

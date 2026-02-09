@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BRAND } from '@/lib/constants';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
-import { BackstageSubNav } from '@/components/dashboard/BackstageSubNav';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 
 interface ProjectForBackstage {
   id: string;
@@ -93,6 +93,7 @@ function activityLabel(action: string, module: string, details: Record<string, u
 export default function ProyectoDetallePage() {
   const params = useParams();
   const router = useRouter();
+  const { maskAmountsInText, maskUser } = useMaskSensitiveData();
   const proyectoId = params.id as string;
   const [project, setProject] = useState<ProjectForBackstage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -436,8 +437,6 @@ export default function ProyectoDetallePage() {
     <BackstageGuard>
       <div className="min-h-screen bg-[var(--bg)]">
         <div className="max-w-7xl mx-auto px-6">
-          <BackstageSubNav showStats={false} onRefresh={fetchProject} contained />
-
           <main className="py-8">
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
@@ -650,11 +649,11 @@ export default function ProyectoDetallePage() {
                                 {activities.map((a) => (
                                   <li key={a.id} className="text-sm border-b border-[var(--border)] pb-3 last:border-0 last:pb-0">
                                     <div className="flex items-start justify-between gap-2">
-                                      <span className="text-[var(--text)] font-medium">{a.user_name ?? 'Usuario'}</span>
+                                      <span className="text-[var(--text)] font-medium">{maskUser(a.user_name ?? 'Usuario')}</span>
                                       <span className="text-[var(--text-muted)] text-xs shrink-0">{formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale: es })}</span>
                                     </div>
                                     <p className="text-[var(--text)] mt-0.5">
-                                      {activityLabel(a.action, a.module, a.details ?? {})}
+                                      {maskAmountsInText(activityLabel(a.action, a.module, a.details ?? {}))}
                                     </p>
                                   </li>
                                 ))}

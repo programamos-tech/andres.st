@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 import { useProyectos } from '@/lib/hooks/useProyectos';
 
 export interface ActivityFeedItem {
@@ -46,6 +47,7 @@ function ActivityLogo({ logoUrl, nombreProyecto }: { logoUrl: string | null; nom
 }
 
 export default function ActividadesPage() {
+  const { maskAmountsInText, maskUser } = useMaskSensitiveData();
   const { proyectos, loading: loadingProyectos } = useProyectos(30000);
   const [actividades, setActividades] = useState<ActivityFeedItem[]>([]);
   const [projectLogos, setProjectLogos] = useState<Record<string, string | null>>({});
@@ -151,14 +153,14 @@ export default function ActividadesPage() {
                         className={`text-sm font-medium ${act.es_error ? '' : 'text-[var(--text)]'}`}
                         style={act.es_error ? { color: 'var(--status-error)' } : undefined}
                       >
-                        {act.accion_realizada}
+                        {maskAmountsInText(act.accion_realizada)}
                       </p>
                       <p className="flex items-center gap-2 mt-1 text-xs text-[var(--text-muted)]">
                         <span className="uppercase font-medium">{act.nombre_proyecto}</span>
                         <span>·</span>
                         <span>{act.modulo_visitado}</span>
                         <span>·</span>
-                        <span>{act.usuario_nombre}</span>
+                        <span>{maskUser(act.usuario_nombre)}</span>
                       </p>
                       {act.es_error && act.error_mensaje && (
                         <p className="text-xs mt-1 truncate" style={{ color: 'var(--status-error)' }}>

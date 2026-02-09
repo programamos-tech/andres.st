@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 interface ChatListItem {
   id: string;
   creado_por_email: string;
@@ -36,6 +37,7 @@ interface ChatDetail {
 const POLL_INTERVAL_MS = 2500;
 
 export default function BackstageAndrebotPage() {
+  const { maskUser } = useMaskSensitiveData();
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -141,9 +143,9 @@ export default function BackstageAndrebotPage() {
                             className={`w-full text-left p-3 hover:bg-[var(--bg)]/50 transition-colors ${isSelected ? 'bg-[var(--bg)] border-l-2 border-l-[var(--accent)]' : ''}`}
                           >
                             <p className="text-sm font-medium text-[var(--text)] truncate">
-                              {chat.creado_por_nombre || chat.creado_por_email || 'Sin nombre'}
+                              {maskUser(chat.creado_por_nombre || chat.creado_por_email || 'Sin nombre')}
                             </p>
-                            <p className="text-xs text-[var(--text-muted)] truncate">{chat.creado_por_email}</p>
+                            <p className="text-xs text-[var(--text-muted)] truncate">{maskUser(chat.creado_por_email)}</p>
                             <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
                               {formatDistanceToNow(new Date(chat.updated_at), { addSuffix: true, locale: es })}
                             </p>
@@ -170,9 +172,9 @@ export default function BackstageAndrebotPage() {
                 <>
                   <div className="p-4 border-b border-[var(--border)] bg-[var(--bg-secondary)]/30">
                     <p className="text-sm font-medium text-[var(--text)]">
-                      {chatDetail.creado_por_nombre || chatDetail.creado_por_email}
+                      {maskUser(chatDetail.creado_por_nombre || chatDetail.creado_por_email)}
                     </p>
-                    <p className="text-xs text-[var(--text-muted)]">{chatDetail.creado_por_email}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{maskUser(chatDetail.creado_por_email)}</p>
                     <p className="text-[10px] text-[var(--text-muted)] mt-1">
                       Actualización automática cada {POLL_INTERVAL_MS / 1000}s
                     </p>

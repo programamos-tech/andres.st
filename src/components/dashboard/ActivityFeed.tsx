@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { MOCK_ACTIVIDADES } from '@/lib/mock-data';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 
 function ActivityAvatar({ logoUrl, initialLetter }: { logoUrl: string | null; initialLetter: string }) {
   const [imgFailed, setImgFailed] = useState(false);
@@ -61,6 +62,7 @@ export interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ projectLogos, fillHeight }: ActivityFeedProps = {}) {
+  const { maskAmountsInText, maskUser } = useMaskSensitiveData();
   const [actividades, setActividades] = useState<ActivityFeedItem[]>([]);
   const [projectLogosFromApi, setProjectLogosFromApi] = useState<Record<string, string | null>>({});
   const [loading, setLoading] = useState(true);
@@ -138,10 +140,10 @@ export function ActivityFeed({ projectLogos, fillHeight }: ActivityFeedProps = {
                   <ActivityAvatar logoUrl={logoUrl} initialLetter={initialLetter} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-[var(--text)] line-clamp-2" title={a.accion_realizada + (a.modulo_visitado ? ` en ${a.modulo_visitado}` : '')}>
-                      {a.accion_realizada}{a.modulo_visitado ? ` en ${a.modulo_visitado}` : ''}
+                      {maskAmountsInText(a.accion_realizada)}{a.modulo_visitado ? ` en ${a.modulo_visitado}` : ''}
                     </p>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                      {a.usuario_nombre}
+                      {maskUser(a.usuario_nombre)}
                       {a.es_error && (
                         <>
                           {' · '}

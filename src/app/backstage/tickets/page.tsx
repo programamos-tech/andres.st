@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BackstageGuard } from '@/components/auth/BackstageGuard';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 import type { TicketEstado } from '@/types/database';
 
 export type TicketPrioridad = 'medio' | 'alto_maromas' | 'alto_espera' | 'urgente';
@@ -112,6 +113,7 @@ const URGENCIA_OPCIONES: { id: FiltroUrgencia; label: string }[] = [
 ];
 
 export default function BackstageTicketsPage() {
+  const { maskUser } = useMaskSensitiveData();
   const [tickets, setTickets] = useState<TicketListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<'all' | 'activos' | 'resueltos'>('activos');
@@ -206,56 +208,60 @@ export default function BackstageTicketsPage() {
             </div>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mr-1">Estado</span>
-              <button
-                onClick={() => setFiltro('all')}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  filtro === 'all' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                Todos ({tickets.length})
-              </button>
-              <button
-                onClick={() => setFiltro('activos')}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  filtro === 'activos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                Activos ({ticketsActivos})
-              </button>
-              <button
-                onClick={() => setFiltro('resueltos')}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  filtro === 'resueltos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                Resueltos ({ticketsResueltos})
-              </button>
+          <div className="mb-6 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/40 p-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider w-20 shrink-0">Estado</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setFiltro('all')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                    filtro === 'all' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--bg)] border border-[var(--border)]'
+                  }`}
+                >
+                  Todos ({tickets.length})
+                </button>
+                <button
+                  onClick={() => setFiltro('activos')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                    filtro === 'activos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--bg)] border border-[var(--border)]'
+                  }`}
+                >
+                  Activos ({ticketsActivos})
+                </button>
+                <button
+                  onClick={() => setFiltro('resueltos')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                    filtro === 'resueltos' ? 'bg-[var(--text)] text-[var(--bg)]' : 'text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--bg)] border border-[var(--border)]'
+                  }`}
+                >
+                  Resueltos ({ticketsResueltos})
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mr-1">Urgencia</span>
-              {URGENCIA_OPCIONES.map((opt) => {
-                const n = countByUrgencia(opt.id);
-                const isActive = filtroUrgencia === opt.id;
-                const isUrgente = opt.id === 'urgente';
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => setFiltroUrgencia(opt.id)}
-                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                      isActive
-                        ? isUrgente
-                          ? 'bg-[var(--status-error)] text-white'
-                          : 'bg-[var(--text)] text-[var(--bg)]'
-                        : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                    }`}
-                  >
-                    {opt.label} ({n})
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-3 border-t border-[var(--border)]">
+              <span className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider w-20 shrink-0">Urgencia</span>
+              <div className="flex flex-wrap gap-2">
+                {URGENCIA_OPCIONES.map((opt) => {
+                  const n = countByUrgencia(opt.id);
+                  const isActive = filtroUrgencia === opt.id;
+                  const isUrgente = opt.id === 'urgente';
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => setFiltroUrgencia(opt.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                        isActive
+                          ? isUrgente
+                            ? 'bg-[var(--status-error)] text-white border border-[var(--status-error)]'
+                            : 'bg-[var(--text)] text-[var(--bg)] border border-[var(--text)]'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text)] bg-[var(--bg)] border border-[var(--border)]'
+                      }`}
+                    >
+                      {opt.label} ({n})
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -310,7 +316,7 @@ export default function BackstageTicketsPage() {
                       <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] truncate">
                         <span className="uppercase truncate">{ticket.proyecto_nombre}</span>
                         <span>·</span>
-                        <span className="truncate">{ticket.creado_por_nombre ?? '—'}</span>
+                        <span className="truncate">{maskUser(ticket.creado_por_nombre ?? '—')}</span>
                         <span>·</span>
                         <span className="shrink-0">{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: es })}</span>
                       </div>
@@ -426,13 +432,13 @@ export default function BackstageTicketsPage() {
 
                   <div className="p-6">
                     <p className="text-xs text-[var(--text-muted)] uppercase tracking-wide mb-3">Reportado por</p>
-                    <p className="text-sm text-[var(--text)]">{ticketDetalle.creado_por_nombre}</p>
+                    <p className="text-sm text-[var(--text)]">{maskUser(ticketDetalle.creado_por_nombre)}</p>
                     {ticketDetalle.creado_por_email && (
                       <a
                         href={`mailto:${ticketDetalle.creado_por_email}`}
                         className="text-xs text-[var(--accent)] hover:underline block mt-0.5"
                       >
-                        {ticketDetalle.creado_por_email}
+                        {maskUser(ticketDetalle.creado_por_email)}
                       </a>
                     )}
                     <p className="text-xs text-[var(--text-muted)] mt-1">

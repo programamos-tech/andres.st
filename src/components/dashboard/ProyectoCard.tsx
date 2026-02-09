@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { ProyectoConEstadisticas } from '@/lib/hooks/useProyectos';
+import { useMaskSensitiveData } from '@/contexts/MaskSensitiveDataContext';
 
 export interface ApiHealthStatus {
   status: 'active' | 'inactive';
@@ -53,6 +54,7 @@ function moduleDisplayName(modulo: string): string {
 }
 
 export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
+  const { maskUser, maskCount } = useMaskSensitiveData();
   const statusColor = {
     active: 'bg-[var(--status-ok)]',
     inactive: 'bg-[var(--text-muted)]',
@@ -82,7 +84,7 @@ export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
               <h3 className="font-medium truncate">{proyecto.nombre_proyecto}</h3>
               <span className={`w-2 h-2 rounded-full shrink-0 ${statusColor[proyecto.status_visual]}`} title={proyecto.status_visual} />
             </div>
-            <p className="text-sm text-[var(--text-muted)] truncate">{proyecto.nombre_cliente}</p>
+            <p className="text-sm text-[var(--text-muted)] truncate">{maskUser(proyecto.nombre_cliente)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -110,7 +112,7 @@ export function ProyectoCard({ proyecto, apiHealth }: ProyectoCardProps) {
         <div className="flex items-center gap-2 text-[var(--text-muted)]">
           <IconActivity />
           <span className="text-xs">
-            <span className="font-semibold text-[var(--text)]">{proyecto.actividad_ultima_hora}</span> actividad (1h)
+            <span className="font-semibold text-[var(--text)]">{maskCount(proyecto.actividad_ultima_hora)}</span> actividad (1h)
           </span>
         </div>
       </div>
