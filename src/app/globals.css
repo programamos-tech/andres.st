@@ -62,6 +62,21 @@ html {
   font-weight: 900;
 }
 
+/* Google Material Symbols */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: normal;
+  display: inline-block;
+  vertical-align: middle;
+}
+.material-symbols-outlined.icon-sm { font-size: 1rem; }
+.material-symbols-outlined.icon-lg { font-size: 1.75rem; }
+.material-symbols-outlined.icon-xl { font-size: 2.25rem; }
+
 /* Sección marca a toda vista: sin margen ni padding vertical */
 .marca-fullview {
   margin-top: 0 !important;
@@ -159,6 +174,83 @@ body {
 
 .logos-marquee-track:hover {
   animation-play-state: paused;
+}
+
+/* Marquee de módulos — mismo efecto, cards más anchas, velocidad moderada */
+.modules-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 120s linear infinite;
+  will-change: transform;
+  gap: 1.25rem;
+}
+
+.modules-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Contenedor del marquee con fade en los bordes */
+.modules-marquee-wrap {
+  position: relative;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+/* Cards del marquee de módulos — más presencia */
+.module-card {
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.2s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-mid), 0 8px 24px rgba(44, 43, 44, 0.12);
+}
+
+/* Kanban — columnas por etapa con ticket de tarea */
+.kanban-column {
+  min-height: 200px;
+}
+
+.kanban-column-header {
+  background: linear-gradient(to bottom, rgba(213, 149, 122, 0.12), transparent);
+}
+
+.kanban-ticket {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.kanban-ticket:hover {
+  box-shadow: var(--shadow-mid);
+  transform: translateY(-1px);
+}
+
+/* Ocultar scrollbar en carrusel de videos (se usan flechas) */
+.video-carousel-scroll::-webkit-scrollbar {
+  display: none;
+}
+.video-carousel-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Botón CTA cute — limpio y suave */
+.cta-cute {
+  padding: 14px 28px;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  text-decoration: none;
+}
+
+.cta-cute:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-mid), 0 6px 20px rgba(213, 149, 122, 0.25);
 }
 
 .logo-marca {

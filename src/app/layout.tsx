@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { Alegreya } from "next/font/google";
 import "./globals.css";
 
-const alegreya = Alegreya({
-  weight: ["700", "800", "900"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-alegreya",
-});
-
 export const metadata: Metadata = {
-  title: "andres.backstage | Software a la medida",
-  description: "Construyo la plataforma que tu marca necesita. Software a la medida, programado desde cero.",
+  title: "andresruss.st | Software a la medida",
+  description: "Desarrollo de software a la medida para negocios que los sistemas genéricos no resuelven. Pagas una vez, es tuyo. DB individual, soporte local. Sincelejo, Colombia.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
@@ -20,7 +13,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={alegreya.variable}>
+    <html lang="es">
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
+      </head>
       <body className="antialiased">
         {children}
       </body>

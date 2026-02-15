@@ -3,14 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BRAND } from '@/lib/constants';
-
-const links = [
-  { href: '/', label: 'Inicio' },
-  { href: '/tienda', label: 'Tienda' },
-  { href: '/andrebot', label: 'Andrebot' },
-  { href: '/backstage', label: 'Backstage' },
-];
+import { BRAND, NAV_LINKS } from '@/lib/constants';
 
 const WHATSAPP_MENSAJE = 'Hola Andrés, necesito invertir en un software, ¿podemos hablarlo?';
 const whatsappUrl = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(WHATSAPP_MENSAJE)}`;
@@ -27,13 +20,14 @@ export function HomeNav({ extraAction }: HomeNavProps) {
   return (
     <nav className="sticky top-0 z-50 px-4 sm:px-6 py-4 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]/50">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <Link href="/" className="hero-heading text-lg sm:text-inherit truncate min-w-0">
-          {BRAND.username}
+        <Link href="/" className="flex flex-col gap-0 min-w-0 no-underline text-inherit leading-tight">
+          <span className="hero-heading text-xl sm:text-2xl text-[var(--text)] tracking-tight truncate">{BRAND.username}</span>
+          <span className="text-[8px] sm:text-[9px] text-[var(--text-muted)] uppercase tracking-wider -mt-0.5">desarrollo de software</span>
         </Link>
 
         {/* Desktop: links + extra + WhatsApp */}
         <div className="hidden md:flex items-center gap-8">
-          {links.map((l) => {
+          {NAV_LINKS.map((l) => {
             const isActive = pathname === l.href || (l.href !== '/' && pathname.startsWith(l.href));
             return (
               <Link
@@ -96,7 +90,7 @@ export function HomeNav({ extraAction }: HomeNavProps) {
       {/* Mobile menu panel */}
       {open && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--bg)] border-b border-[var(--border)] px-4 py-4 flex flex-col gap-1">
-          {links.map((l) => {
+          {NAV_LINKS.map((l) => {
             const isActive = pathname === l.href || (l.href !== '/' && pathname.startsWith(l.href));
             return (
               <Link
