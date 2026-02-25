@@ -56,7 +56,7 @@ export const MOCK_COMENTARIOS: TicketComentario[] = [
     id: '1',
     ticket_id: '1',
     mensaje: 'Gracias por reportar. Estoy revisando el problema.',
-    autor_nombre: 'Andrés Russ',
+    autor_nombre: 'equipo de programamos',
     es_admin: true,
     created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
   },
@@ -64,7 +64,7 @@ export const MOCK_COMENTARIOS: TicketComentario[] = [
     id: '2',
     ticket_id: '2',
     mensaje: 'Ya empecé a trabajar en esto. Te aviso cuando esté listo.',
-    autor_nombre: 'Andrés Russ',
+    autor_nombre: 'equipo de programamos',
     es_admin: true,
     created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
   }

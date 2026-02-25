@@ -946,8 +946,8 @@ export default function AyudaPage() {
             {
               role: 'bot',
               text: nombre
-                ? `Mirá, ${nombre}, he creado un ticket de soporte. Andrés lo va a revisar y podés ver el estado automáticamente.`
-                : 'Mirá, he creado un ticket de soporte. Andrés lo va a revisar y podés ver el estado automáticamente.',
+                ? `Mirá, ${nombre}, he creado un ticket de soporte. El equipo de programamos lo va a revisar y podés ver el estado automáticamente.`
+                : 'Mirá, he creado un ticket de soporte. El equipo de programamos lo va a revisar y podés ver el estado automáticamente.',
               ticketId: data.id
             }
           ]);

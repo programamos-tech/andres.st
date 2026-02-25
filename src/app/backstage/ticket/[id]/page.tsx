@@ -386,7 +386,7 @@ export default function BackstageTicketPage() {
                 <div className="mt-6 pt-6 border-t border-[var(--border)]">
                   <TicketChat
                     ticketId={ticket.id}
-                    defaultAutorNombre="equipo de andres.st"
+                    defaultAutorNombre="equipo de programamos"
                     esAdmin={true}
                     puedeEnviar={true}
                   />

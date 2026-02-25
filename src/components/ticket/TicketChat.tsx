@@ -150,7 +150,7 @@ export function TicketChat({
               >
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="text-sm font-semibold text-[var(--text)]">
-                    {c.es_admin ? 'equipo de andres.st' : c.autor_nombre}
+                    {c.es_admin ? 'equipo de programamos' : c.autor_nombre}
                   </span>
                   {c.es_admin && (
                     <span className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent)]/20 text-[var(--accent)]">

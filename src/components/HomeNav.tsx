@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BRAND, NAV_LINKS } from '@/lib/constants';
 
-const WHATSAPP_MENSAJE = 'Hola Andrés, necesito invertir en un software, ¿podemos hablarlo?';
+const WHATSAPP_MENSAJE = 'Hola, necesito invertir en un software, ¿podemos hablarlo?';
 const whatsappUrl = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(WHATSAPP_MENSAJE)}`;
 
 type HomeNavProps = {

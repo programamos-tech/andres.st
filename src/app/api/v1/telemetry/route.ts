@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     status: 'ok',
-    service: 'andres.st Telemetry API',
+    service: 'programamos Telemetry API',
     version: '1.0.0',
     timestamp: new Date().toISOString()
   });

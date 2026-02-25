@@ -8,7 +8,9 @@ import { PreviewSimulation } from '@/components/tienda/PreviewSimulation';
 import { PRODUCTOS } from '@/lib/tienda-productos';
 
 /** Logos de las marcas que trabajan conmigo */
-const CLIENT_LOGOS = [
+const CLIENT_LOGOS: { src: string; alt: string; contain?: boolean }[] = [
+  { src: '/logo.PNG', alt: 'Programamos' },
+  { src: '/fundease.jpeg', alt: 'Fundease', contain: true },
   { src: '/aleya.jpeg', alt: 'Aleya' },
   { src: '/torocell4h.webp', alt: 'Torocell 4H' },
   { src: '/torocellsahagun.jpeg', alt: 'Torocell Sahagún' },
@@ -24,61 +26,47 @@ export default function Home() {
       {/* Hero + Marcas: primera pantalla */}
       <div className="min-h-screen flex flex-col hero-glow">
         <main className="flex-1 flex items-center px-6 py-12 md:py-16">
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-center">
-              
-              {/* Text */}
-              <div className="lg:pr-8">
-                <h1 className="hero-heading text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl mb-4 leading-tight md:leading-[1.2] max-w-xl tracking-tight font-bold text-[var(--text)]">
-                  ¿Los sistemas del mercado no resuelven tu problema?
-                </h1>
-                
-                <h2 className="hero-heading text-lg sm:text-xl md:text-2xl lg:text-3xl text-[var(--accent)] mb-4 tracking-tight font-bold">
-                  Construimos el software que tu negocio necesita.
-                </h2>
-                
-                <p className="text-[var(--text-muted)] text-base md:text-lg mb-6 leading-relaxed">
-                  No adaptamos tu empresa a un software genérico.
-                  <br />
-                  Programamos desde cero lo que realmente necesitas.
-                </p>
+          <div className="max-w-4xl mx-auto w-full text-center">
+            <h1 className="text-base md:text-lg text-[var(--text)] mb-4 md:mb-6 leading-tight font-medium">
+              ¿Los sistemas del mercado no resuelven tu problema?
+            </h1>
 
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <a 
-                    href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary inline-flex items-center gap-2"
-                  >
-                    Cuéntanos tu problema
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </a>
-                  <a 
-                    href="#como-funciona"
-                    className="btn btn-outline inline-flex items-center gap-2"
-                  >
-                    ¿Cómo trabajamos?
-                  </a>
-                </div>
+            <h2 className="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-6 md:mb-8 leading-tight tracking-tight font-bold text-[var(--accent)]">
+              Desarrollamos el software
+              <br />
+              que tu negocio necesita
+            </h2>
 
-                <p className="text-[var(--text-muted)] text-sm md:text-base flex flex-col gap-1">
-                  <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> 10 negocios ya usan software hecho por nosotros</span>
-                  <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo para toda Colombia</span>
-                </p>
-              </div>
+            <p className="text-[var(--text-muted)] text-base md:text-lg mb-6 leading-relaxed max-w-2xl mx-auto">
+              No adaptamos tu empresa a un software genérico.
+              <br />
+              Programamos desde cero lo que realmente necesitas.
+            </p>
 
-              {/* Avatar */}
-              <div className="flex justify-center lg:justify-end order-first lg:order-last">
-                <img 
-                  src={BRAND.avatar}
-                  alt={BRAND.name}
-                  className="w-48 h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 rounded-full object-cover shadow-[var(--shadow-mid)] ring-4 ring-[var(--border)]/30"
-                />
-              </div>
-
+            <div className="flex flex-wrap gap-3 justify-center mb-6">
+              <a
+                href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary inline-flex items-center gap-2"
+              >
+                Cuéntanos tu problema
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+              <a
+                href="#como-funciona"
+                className="btn btn-outline inline-flex items-center gap-2"
+              >
+                ¿Cómo trabajamos?
+              </a>
             </div>
+
+            <p className="text-[var(--text-muted)] text-sm md:text-base flex flex-col gap-1 items-center">
+              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> 10 negocios ya usan software hecho por nosotros</span>
+              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo para toda Colombia</span>
+            </p>
           </div>
         </main>
 
@@ -98,7 +86,7 @@ export default function Home() {
                     <img
                       src={logo.src}
                       alt={logo.alt}
-                      className="logo-marca w-full h-full object-cover"
+                      className={`logo-marca w-full h-full ${logo.contain ? 'object-contain' : 'object-cover'}`}
                     />
                   </div>
                 </div>
@@ -180,6 +168,7 @@ export default function Home() {
                     src="/rogerbox.mp4"
                     title="Plataforma de cursos y gestión de un gimnasio"
                     className="w-full h-full object-contain"
+                    startAtSeconds={40}
                   />
                 </div>
               </div>
@@ -644,13 +633,13 @@ export default function Home() {
           <div className="pt-10 border-t border-[var(--border)]">
             <div className="marca-fullview flex flex-col items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
               <p
-                className="hero-heading text-center text-[var(--text)] tracking-tight select-none w-full m-0"
+                className="hero-heading text-center text-[var(--text)] tracking-tight select-none w-full m-0 mb-12"
                 style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}
               >
                 {BRAND.username}
               </p>
-              <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-[0.35em] mt-2 font-normal opacity-80">
-                Estudio de desarrollo de software
+              <p className="text-[10px] sm:text-xs text-[var(--text-muted)] uppercase tracking-[0.35em] font-normal opacity-80">
+                desarrollo de software
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">

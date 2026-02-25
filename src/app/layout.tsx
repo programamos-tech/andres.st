@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "andresruss.st | Software a la medida",
+  title: "programamos | Software a la medida",
   description: "Desarrollo de software a la medida para negocios que los sistemas genéricos no resuelven. Pagas una vez, es tuyo. DB individual, soporte local. Sincelejo, Colombia.",
   icons: { icon: "/favicon.svg" },
 };

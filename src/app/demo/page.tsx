@@ -93,7 +93,7 @@ export default function DemoClientApp() {
             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
               <p className="text-amber-400 text-sm">
                 <strong>Demo:</strong> Esta es una simulación del sistema de un cliente. 
-                Haz click en <strong>"? Ayuda"</strong> arriba para ver cómo funciona el flujo hacia andresruss.st
+                Haz click en <strong>"? Ayuda"</strong> arriba para ver cómo funciona el flujo hacia programamos
               </p>
             </div>
 

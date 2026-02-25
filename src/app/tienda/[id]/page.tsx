@@ -210,7 +210,7 @@ export default function ProductoDetallePage() {
                 <Link href="/backstage" className="block text-[var(--brand-marron)] hover:text-[var(--brand-cafe)] transition-colors">
                   Dashboard
                 </Link>
-                <a href={`https://wa.me/${BRAND.whatsapp}?text=Hola%20Andrés,%20me%20interesa%20un%20proyecto`} target="_blank" rel="noopener noreferrer" className="block text-[var(--brand-marron)] hover:text-[var(--brand-terracota)] transition-colors">
+                <a href={`https://wa.me/${BRAND.whatsapp}?text=Hola,%20me%20interesa%20un%20proyecto`} target="_blank" rel="noopener noreferrer" className="block text-[var(--brand-marron)] hover:text-[var(--brand-terracota)] transition-colors">
                   Iniciar proyecto
                 </a>
               </div>
