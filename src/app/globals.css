@@ -10,20 +10,20 @@
   --text: #2c2b2c;
   --text-muted: #5f4e43;
   --border: #a06f5940;
-  --accent: #d5957a;
-  --accent-hover: #c0846a;
+  --accent: #ff9568;
+  --accent-hover: #ee8558;
   --status-ok: #a06f59;
   --status-error: #b85450;
   --status-warn: #b87d4a;
   /* Nombres de marca para usar en toda la UI */
-  --brand-terracota: #d5957a;
+  --brand-terracota: #ff9568;
   --brand-cafe: #a06f59;
   --brand-carbon: #2c2b2c;
   --brand-crema: #dcd5cd;
   --brand-marron: #5f4e43;
   --shadow-soft: 0 4px 24px rgba(44, 43, 44, 0.06);
   --shadow-mid: 0 12px 40px rgba(44, 43, 44, 0.08);
-  --shadow-glow: 0 0 60px rgba(213, 149, 122, 0.15);
+  --shadow-glow: 0 0 60px rgba(255, 149, 104, 0.15);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,19 +33,19 @@
     --text: #dcd5cd;
     --text-muted: #a06f59;
     --border: #5f4e4350;
-    --accent: #d5957a;
-    --accent-hover: #e0a58a;
+    --accent: #ff9568;
+    --accent-hover: #ffa67d;
     --status-ok: #c49a7a;
     --status-error: #d96a66;
     --status-warn: #d99d6a;
-    --brand-terracota: #d5957a;
+    --brand-terracota: #ff9568;
     --brand-cafe: #c49a7a;
     --brand-carbon: #dcd5cd;
     --brand-crema: #3d3a3b;
     --brand-marron: #a06f59;
     --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.2);
     --shadow-mid: 0 12px 40px rgba(0, 0, 0, 0.25);
-    --shadow-glow: 0 0 60px rgba(213, 149, 122, 0.12);
+    --shadow-glow: 0 0 60px rgba(255, 149, 104, 0.12);
   }
 }
 

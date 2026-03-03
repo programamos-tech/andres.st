@@ -22,9 +22,7 @@ export const CTA_LANDING_WHATSAPP = 'Hola, necesito un sitio web o landing, ¿me
 
 /** Links del navbar y del footer (una sola fuente de verdad) */
 export const NAV_LINKS = [
-  { href: '/', label: 'Inicio' },
-  { href: '/landing', label: 'Landing' },
-  { href: '/tienda', label: 'Tienda' },
-  { href: '/andrebot', label: 'Andrebot' },
-  { href: '/backstage', label: 'Backstage' },
+  { href: '/', label: 'Software a la medida' },
+  { href: '/landing', label: 'Sitios web' },
+  { href: '/tienda', label: 'Funcionalidades' },
 ] as const;
