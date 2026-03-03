@@ -8,10 +8,10 @@ export const contentType = 'image/png';
 function getImageDataUrl(): string {
   try {
     const publicDir = path.join(process.cwd(), 'public');
-    const imagePath = path.join(publicDir, 'andrew.jpg');
+    const imagePath = path.join(publicDir, 'favicon.png');
     const imageBuffer = fs.readFileSync(imagePath);
     const base64 = imageBuffer.toString('base64');
-    return `data:image/jpeg;base64,${base64}`;
+    return `data:image/png;base64,${base64}`;
   } catch {
     return '';
   }
@@ -31,7 +31,7 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#e5e5e5',
+          background: 'transparent',
         }}
       >
         {imageSrc ? (
