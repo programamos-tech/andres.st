@@ -22,10 +22,10 @@ const PASOS = [
 ] as const;
 
 const SITIOS_WEB: Sitio[] = [
-  { name: 'Rogerbox', url: 'https://rogerbox.co', domain: 'rogerbox.co', previewVideo: '/previews/rogerbox-web.mov' },
-  { name: 'Martha Lucia Contreras', url: 'https://marthaluciacontreras.com', domain: 'marthaluciacontreras.com', previewVideo: '/previews/fundesae-web.mov' },
-  { name: 'Fundesae', url: 'https://fundesae.co', domain: 'fundesae.co', previewVideo: '/previews/marthaluciacontreras-web.mov' },
-  { name: 'C&M', url: '#', domain: 'Próximamente', pending: true, previewVideo: '/previews/cym-web.mov' },
+  { name: 'Rogerbox', url: 'https://rogerbox.co', domain: 'rogerbox.co', previewVideo: '/previews/rogerbox-web.mp4' },
+  { name: 'Martha Lucia Contreras', url: 'https://marthaluciacontreras.com', domain: 'marthaluciacontreras.com', previewVideo: '/previews/fundesae-web.mp4' },
+  { name: 'Fundesae', url: 'https://fundesae.co', domain: 'fundesae.co', previewVideo: '/previews/marthaluciacontreras-web.mp4' },
+  { name: 'C&M', url: '#', domain: 'Próximamente', pending: true, previewVideo: '/previews/cym-web.mp4' },
 ];
 
 export default function LandingPage() {
