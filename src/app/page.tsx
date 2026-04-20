@@ -45,7 +45,7 @@ export default function Home() {
                 {BRAND.title}
               </p>
               <h1 className="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-6xl mb-4 md:mb-6 leading-[1.08] tracking-tight text-[var(--accent)]">
-                Hola, soy Andrés
+                Hola, soy Andrés Russ
               </h1>
               <p className="text-[var(--text)] text-lg md:text-xl font-medium mb-4 leading-snug">
                 Desarrollador de software en Sincelejo.
