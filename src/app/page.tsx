@@ -48,7 +48,7 @@ export default function Home() {
                 Hola, soy Andrés
               </h1>
               <p className="text-[var(--text)] text-lg md:text-xl font-medium mb-4 leading-snug">
-                Desarrollador de software freelancer en Sincelejo.
+                Desarrollador de software en Sincelejo.
               </p>
               <p className="text-[var(--text-muted)] text-base md:text-lg mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
                 Me dedico a construir soluciones digitales a la medida: sitios web, sistemas de gestión y tiendas en línea. He
