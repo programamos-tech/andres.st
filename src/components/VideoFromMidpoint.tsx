@@ -27,6 +27,8 @@ export function VideoFromMidpoint({ src = '', title, className = '', children, s
     } else {
       el.currentTime = duration * 0.5;
     }
+    // muted + play() tras el seek: las políticas del navegador permiten autoplay solo sin audio
+    void el.play().catch(() => {});
   }, [startAtSeconds]);
 
   const startFromMiddleDeferred = useCallback(() => {
@@ -41,6 +43,7 @@ export function VideoFromMidpoint({ src = '', title, className = '', children, s
       ref={videoRef}
       className={className}
       controls
+      muted
       playsInline
       loop
       preload="metadata"
@@ -49,7 +52,12 @@ export function VideoFromMidpoint({ src = '', title, className = '', children, s
       onLoadedData={startFromMiddleDeferred}
       onCanPlay={startFromMiddle}
     >
-      {children ?? <source src={src} type="video/mp4" />}
+      {children ?? (
+        <source
+          src={src}
+          type={src.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4'}
+        />
+      )}
     </video>
   );
 }

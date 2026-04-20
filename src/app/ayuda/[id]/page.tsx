@@ -54,7 +54,7 @@ export default function TicketDetailPage() {
       {/* Nav */}
       <nav className="px-6 py-6 border-b border-[var(--border)]">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="font-semibold">{BRAND.username}</Link>
+          <Link href="/" className="font-semibold">{BRAND.name}</Link>
           <div className="flex items-center gap-6">
             <Link href="/" className="text-sm text-[var(--text-muted)] hover:text-[var(--text)] transition-colors">
               Home

@@ -1,5 +1,6 @@
+import Image from 'next/image';
 import Link from 'next/link';
-import { BRAND, CTA_WHATSAPP_MESSAGE, NAV_LINKS, SOCIAL_LINKS } from '@/lib/constants';
+import { BRAND, CTA_LICENCIA_WHATSAPP, CTA_WHATSAPP_MESSAGE, SOCIAL_LINKS } from '@/lib/constants';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { HomeNav } from '@/components/HomeNav';
 import { VideoFromMidpoint } from '@/components/VideoFromMidpoint';
@@ -9,7 +10,7 @@ import { PRODUCTOS } from '@/lib/tienda-productos';
 
 /** Logos de las marcas que trabajan conmigo */
 const CLIENT_LOGOS: { src: string; alt: string; contain?: boolean }[] = [
-  { src: '/logo.PNG', alt: 'Programamos' },
+  { src: '/logo.PNG', alt: 'Proyecto propio' },
   { src: '/fundease.jpeg', alt: 'Fundease', contain: true },
   { src: '/aleya.jpeg', alt: 'Aleya' },
   { src: '/torocell4h.webp', alt: 'Torocell 4H' },
@@ -23,57 +24,133 @@ export default function Home() {
     <div id="top" className="min-h-screen flex flex-col scroll-mt-4">
       <HomeNav />
 
-      {/* Hero + Marcas: primera pantalla */}
+      {/* Hero: presentación + foto */}
       <div className="min-h-screen flex flex-col hero-glow">
-        <main className="flex-1 flex items-center px-6 py-12 md:py-16">
-          <div className="max-w-4xl mx-auto w-full text-center">
-            <h1 className="text-base md:text-lg text-[var(--text)] mb-4 md:mb-6 leading-tight font-medium">
-              ¿Los sistemas del mercado no resuelven tu problema?
-            </h1>
-
-            <h2 className="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl mb-6 md:mb-8 leading-tight tracking-tight font-bold text-[var(--accent)]">
-              Desarrollamos el software
-              <br />
-              que tu negocio necesita
-            </h2>
-
-            <p className="text-[var(--text-muted)] text-base md:text-lg mb-6 leading-relaxed max-w-2xl mx-auto">
-              No adaptamos tu empresa a un software genérico.
-              <br />
-              Programamos desde cero lo que realmente necesitas.
-            </p>
-
-            <div className="flex flex-wrap gap-3 justify-center mb-6">
-              <a
-                href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary inline-flex items-center gap-2"
-              >
-                Cuéntanos tu problema
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-              <a
-                href="#como-funciona"
-                className="btn btn-outline inline-flex items-center gap-2"
-              >
-                ¿Cómo trabajamos?
-              </a>
+        <main className="flex-1 flex items-center px-6 py-12 md:py-16 lg:py-20">
+          <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div className="lg:col-span-5 order-2 lg:order-1 flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-[320px] sm:max-w-[380px] aspect-[4/5] rounded-3xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg-secondary)]">
+                <Image
+                  src={BRAND.portrait}
+                  alt={`${BRAND.name}, ${BRAND.title}`}
+                  fill
+                  className="object-cover object-top"
+                  sizes="(max-width: 1024px) 90vw, 400px"
+                  priority
+                />
+              </div>
             </div>
-
-            <p className="text-[var(--text-muted)] text-sm md:text-base flex flex-col gap-1 items-center">
-              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> 10 negocios ya usan software hecho por nosotros</span>
-              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo para toda Colombia</span>
-            </p>
+            <div className="lg:col-span-7 order-1 lg:order-2 text-center lg:text-left">
+              <p className="text-xs sm:text-sm font-medium uppercase tracking-[0.2em] text-[var(--text-muted)] mb-3">
+                {BRAND.title}
+              </p>
+              <h1 className="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-6xl mb-4 md:mb-6 leading-[1.08] tracking-tight text-[var(--accent)]">
+                Hola, soy Andrés
+              </h1>
+              <p className="text-[var(--text)] text-lg md:text-xl font-medium mb-4 leading-snug">
+                Desarrollador de software freelancer en Sincelejo.
+              </p>
+              <p className="text-[var(--text-muted)] text-base md:text-lg mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Me dedico a construir soluciones digitales a la medida: sitios web, sistemas de gestión y tiendas en línea. He
+                trabajado con clientes locales creando herramientas que usan todos los días en su operación.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6">
+                <a
+                  href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary inline-flex items-center gap-2"
+                >
+                  Escríbeme por WhatsApp
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </a>
+                <a href="#servicios" className="btn btn-outline inline-flex items-center gap-2">
+                  Ver servicios
+                </a>
+              </div>
+              <p className="text-[var(--text-muted)] text-sm md:text-base flex flex-col gap-1 items-center lg:items-start">
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span>
+                  Primera conversación sin costo: cuéntame qué necesitas
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span>
+                  Desde Sincelejo para toda Colombia
+                </span>
+              </p>
+            </div>
           </div>
         </main>
 
-        {/* Marcas que trabajan con nosotros — mismo bloque que el hero */}
+        {/* Tres servicios principales */}
+        <section id="servicios" className="border-t border-[var(--border)] px-6 py-14 md:py-20 bg-[var(--bg)] scroll-mt-24">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="hero-heading text-2xl md:text-3xl lg:text-4xl text-[var(--text)] text-center mb-3 tracking-tight">
+              Tres formas de trabajar juntos
+            </h2>
+            <p className="text-center text-[var(--text-muted)] text-base md:text-lg max-w-2xl mx-auto mb-10 md:mb-12">
+              Elegí la opción que encaje con tu etapa: presencia web, sistema listo con licencia o algo hecho solo para vos.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+              {[
+                {
+                  icon: 'language',
+                  title: 'Sitios web y landing pages',
+                  text: 'Presencia profesional en internet: landings que convierten, sitios corporativos y páginas rápidas, pensadas para que la gente te contacte.',
+                  cta: 'Quiero sitio o landing',
+                  href: `/landing`,
+                  wa: null as string | null,
+                },
+                {
+                  icon: 'storefront',
+                  title: 'Sistema de gestión comercial (por licencia)',
+                  text: 'Productos con licencia anual: vos pagás el plan cada año e incluye mi implementación en tu negocio, capacitación de tu equipo y el acompañamiento para que el sistema quede en uso real. Ideal para facturación, inventarios, cartera y operación diaria.',
+                  cta: 'Hablar de licencia y alcance',
+                  href: null,
+                  wa: CTA_LICENCIA_WHATSAPP,
+                },
+                {
+                  icon: 'architecture',
+                  title: 'Software a la medida',
+                  text: 'Cuando necesitás algo que no existe en el mercado: lo diseño y desarrollo según tus procesos — desde plataformas de cursos hasta membresías de gimnasio o flujos muy específicos.',
+                  cta: 'Contar mi idea',
+                  href: null,
+                  wa: CTA_WHATSAPP_MESSAGE,
+                },
+              ].map((s) => (
+                <div
+                  key={s.title}
+                  className="rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 md:p-7 flex flex-col h-full shadow-[var(--shadow-soft)]"
+                >
+                  <span className="material-symbols-outlined icon-xl text-[var(--accent)] mb-4">{s.icon}</span>
+                  <h3 className="hero-heading text-xl md:text-2xl text-[var(--text)] mb-3 tracking-tight">{s.title}</h3>
+                  <p className="text-[var(--text-muted)] text-sm md:text-base leading-relaxed flex-1 mb-6">{s.text}</p>
+                  {s.href ? (
+                    <Link href={s.href} className="btn btn-primary w-full justify-center text-center mt-auto">
+                      {s.cta}
+                    </Link>
+                  ) : (
+                    <a
+                      href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(s.wa!)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary w-full justify-center mt-auto"
+                    >
+                      {s.cta}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Marcas / clientes */}
         <section className="border-t border-[var(--border)] py-8 md:py-10 overflow-hidden flex-shrink-0">
           <h2 className="hero-heading text-center text-xl md:text-2xl lg:text-3xl text-[var(--text)] mb-6 px-6 tracking-tight">
-            Marcas que trabajan con nosotros
+            Algunas marcas y negocios con los que he trabajado
           </h2>
           <div className="relative">
             <div className="logos-marquee-track">
@@ -96,20 +173,20 @@ export default function Home() {
         </section>
       </div>
 
-      {/* ¿Cuándo necesitas software a la medida? */}
+      {/* ¿Cuándo tiene sentido algo a la medida? */}
       <section className="px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg)]">
         <div className="max-w-4xl mx-auto">
           <ScrollReveal>
             <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-10 text-center tracking-tight">
-              ¿Cuándo necesitas software a la medida?
+              ¿Cuándo tiene sentido un software a la medida?
             </h2>
           </ScrollReveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-10">
             {[
-              { icon: 'block', title: 'Los sistemas del mercado no funcionan', text: 'Probaste opciones de facturación, contabilidad, inventario... ninguno hace lo que tu negocio necesita.' },
-              { icon: 'swap_horiz', title: 'Te obligan a adaptar tu proceso', text: 'El software dice "así se hace" pero tu negocio funciona diferente.' },
-              { icon: 'payments', title: 'Pagas por funciones que no usas', text: 'Suscripciones caras con módulos que nunca tocaste.' },
-              { icon: 'lightbulb', title: 'Necesitás algo único', text: 'Tu operación es específica. No hay software para eso.' },
+              { icon: 'block', title: 'Los sistemas del mercado no te sirven', text: 'Probaste facturación, inventarios, cartera… ninguno encaja con cómo operás de verdad.' },
+              { icon: 'swap_horiz', title: 'Te obligan a cambiar tu proceso', text: 'El software dice “así se hace”, pero tu negocio funciona distinto.' },
+              { icon: 'payments', title: 'Pagás por cosas que no usás', text: 'Planes con módulos que nunca tocás y que te salen caros cada mes.' },
+              { icon: 'lightbulb', title: 'Necesitás algo que no existe en una caja', text: 'Tu operación es específica: hace falta diseñarla a tu medida.' },
             ].map((s, i) => (
               <ScrollReveal key={i} delay={i * 0.05}>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 md:p-6">
@@ -126,27 +203,28 @@ export default function Home() {
             <div className="rounded-xl border-2 border-[var(--accent)] bg-[var(--bg)] p-6 md:p-8 text-center">
               <h3 className="hero-heading text-xl md:text-2xl text-[var(--text)] mb-3 tracking-tight flex items-center justify-center gap-2">
                 <span className="material-symbols-outlined icon-xl text-[var(--accent)]">handshake</span>
-                Ahí entramos nosotros
+                Ahí entro yo
               </h3>
               <p className="text-[var(--text-muted)] text-base md:text-lg leading-relaxed">
-                Nos sentamos contigo, entendemos cómo trabajas,
+                Charlamos (presencial o videollamada), entiendo cómo trabajás
                 <br />
-                y programamos el sistema que resuelva tu problema.
+                y construyo el sistema que resuelva tu problema.
               </p>
             </div>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* Sistema a la medida en acción — scroll horizontal con 3 videos */}
+      {/* Algunos trabajos — B-roll / videos */}
       <section className="py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-8">
           <ScrollReveal>
             <h2 className="hero-heading text-center text-2xl md:text-3xl text-[var(--text)] mb-4 tracking-tight">
-              Un sistema a la medida en acción
+              Estos son algunos de esos trabajos
             </h2>
-            <p className="text-center text-[var(--text-muted)] text-lg">
-              Así puede verse un sistema hecho para tu negocio: a tu ritmo, con lo que necesitas. Usá las flechas o deslizá para ver los tres proyectos.
+            <p className="text-center text-[var(--text-muted)] text-lg max-w-2xl mx-auto">
+              No son demos genéricos: son sistemas que usan negocios reales. Deslizá o usá las flechas para ver tres proyectos
+              distintos.
             </p>
           </ScrollReveal>
         </div>
@@ -156,7 +234,7 @@ export default function Home() {
               <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
                 <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
                   <VideoFromMidpoint
-                    src="/zpnat.mp4"
+                    src="/landing.mp4"
                     title="Sistema de seguimiento de clientes y domicilios"
                     className="w-full h-full object-contain"
                   />
@@ -165,23 +243,19 @@ export default function Home() {
               <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
                 <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
                   <VideoFromMidpoint
-                    src="/rogerbox.mp4"
+                    src="/landing2.mp4"
                     title="Plataforma de cursos y gestión de un gimnasio"
                     className="w-full h-full object-contain"
-                    startAtSeconds={40}
                   />
                 </div>
               </div>
               <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
                 <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
                   <VideoFromMidpoint
+                    src="/video.mp4"
                     title="Distribuidora de productos con diferentes tiendas"
                     className="w-full h-full object-contain"
-                  >
-                    <source src={encodeURI('/video-bg (2).mp4')} type="video/mp4" />
-                    <source src="/sistema.mov" type="video/quicktime" />
-                    Tu navegador no soporta la reproducción del video.
-                  </VideoFromMidpoint>
+                  />
                 </div>
               </div>
             </ScrollToCenterVideo>
@@ -197,10 +271,11 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-10">
             <ScrollReveal>
               <h2 className="hero-heading text-2xl md:text-4xl text-[var(--text)] text-center tracking-tight mb-3">
-                Funcionalidades e integraciones para tu sistema
+                Funcionalidades e integraciones que ya he construido
               </h2>
               <p className="text-center text-[var(--text-muted)] text-base md:text-lg max-w-2xl mx-auto">
-                Reportes, dashboards, integraciones con WhatsApp o pasarelas de pago, y sistemas completos. Todo a la medida.
+                Reportes, dashboards, WhatsApp, pagos y sistemas completos. Podés inspirarte en el catálogo y lo adaptamos a tu
+                caso.
               </p>
             </ScrollReveal>
           </div>
@@ -254,7 +329,7 @@ export default function Home() {
                   <span className="material-symbols-outlined icon-sm">arrow_forward</span>
                 </Link>
                 <p className="text-sm text-[var(--text-muted)] mt-4">
-                  Explorá módulos y sistemas. Elegí lo que necesitas y lo cotizamos.
+                  Explorá módulos y sistemas. Si algo encaja, lo cotizamos juntos.
                 </p>
               </div>
             </ScrollReveal>
@@ -262,15 +337,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cómo trabajamos — Kanban por etapas */}
+      {/* Cómo trabajo — Kanban por etapas */}
       <section id="como-funciona" className="px-4 sm:px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
         <div className="max-w-6xl mx-auto">
           <ScrollReveal>
             <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-2 text-center tracking-tight">
-              Cómo trabajamos
+              Cómo trabajo
             </h2>
             <p className="text-center text-[var(--text-muted)] text-sm md:text-base mb-8">
-              Cada columna es una etapa. El ticket es lo que hacemos ahí.
+              Cada columna es una etapa. El ticket resume lo que hago en esa fase.
             </p>
           </ScrollReveal>
           <ScrollReveal>
@@ -280,11 +355,11 @@ export default function Home() {
             >
               <div className="grid grid-flow-col auto-cols-[260px] md:grid-flow-row md:grid-cols-2 lg:grid-cols-5 md:auto-cols-auto gap-3 md:gap-4 min-w-0">
               {[
-                { icon: 'chat', title: 'Conversamos', text: 'Te escuchamos. Qué problema tienes, cómo trabajas hoy, qué necesitas.', time: '30-60 min' },
-                { icon: 'visibility', title: 'Entendemos', text: 'Vamos a tu negocio (o videollamada). Observamos cómo operas realmente.', time: '2-3 h' },
-                { icon: 'design_services', title: 'Diseñamos juntos', text: 'Te mostramos cómo se vería el sistema. Mockups, flujos, funciones.', time: '1 sem' },
-                { icon: 'code', title: 'Programamos', text: 'Construimos el sistema desde cero. Te mostramos avances cada semana.', time: '2-8 sem' },
-                { icon: 'install_mobile', title: 'Implementamos', text: 'Instalamos, capacitamos a tu equipo. Garantía 1 año en todos los sistemas.', time: '1 sem +' },
+                { icon: 'chat', title: 'Conversamos', text: 'Te escucho: qué problema tenés, cómo trabajás hoy y qué necesitás.', time: '30-60 min' },
+                { icon: 'visibility', title: 'Entiendo', text: 'Visito tu negocio o lo vemos por videollamada. Miro cómo operás en la práctica.', time: '2-3 h' },
+                { icon: 'design_services', title: 'Diseñamos juntos', text: 'Te muestro cómo se vería el sistema: mockups, flujos y funciones.', time: '1 sem' },
+                { icon: 'code', title: 'Programo', text: 'Construyo el sistema desde cero. Vas viendo avances cada semana.', time: '2-8 sem' },
+                { icon: 'install_mobile', title: 'Implemento', text: 'Instalo, capacito a tu equipo y te dejo con garantía. En licencias, el plan anual incluye soporte acordado.', time: '1 sem +' },
               ].map((step, i) => (
                 <div
                   key={i}
@@ -316,7 +391,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="cta-cute inline-flex items-center gap-2"
               >
-                Cuéntanos sobre tu proyecto
+                Contame sobre tu proyecto
                 <span className="material-symbols-outlined text-lg">arrow_forward</span>
               </a>
             </div>
@@ -332,9 +407,8 @@ export default function Home() {
               Cómo funciona la inversión
             </h2>
             <p className="text-center text-[var(--text-muted)] text-lg mb-10">
-              No es una suscripción mensual infinita.
-              <br />
-              Es como comprar un carro: lo pagas, es tuyo.
+              Depende del servicio: un sitio o un proyecto a la medida no es lo mismo que un sistema con licencia anual. En la
+              propuesta te dejo todo claro, sin letra chica.
             </p>
           </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -342,60 +416,67 @@ export default function Home() {
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 h-full flex flex-col">
                 <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2">
                   <span className="material-symbols-outlined icon-lg text-[var(--accent)]">code</span>
-                  Desarrollo
+                  Sitios web y software a la medida
                 </h3>
-                <p className="text-[var(--text-muted)] text-sm mb-3">Como cuando compras un carro: eliges color, tapicería, parlantes. Así el software a la medida.</p>
+                <p className="text-[var(--text-muted)] text-sm mb-3">
+                  Definimos alcance y precio del proyecto. Lo pagás según lo acordemos (muchas veces en cuotas) y el entregable es
+                  tuyo.
+                </p>
                 <ul className="text-sm text-[var(--text-muted)] space-y-1 mb-4 list-disc pl-5">
-                  <li>Eliges lo que necesitas: facturación, cartera, inventarios, clientes, reportes, etc.; lo programamos a tu medida</li>
-                  <li>Un solo pago, una única vez. Es tuyo para siempre (no suscripción eterna)</li>
-                  <li>Planes a cuotas en la negociación: 50 y 50, 40-30-30 u otras combinaciones</li>
+                  <li>En a la medida: desarrollo acorde a lo que necesitás, sin módulos de relleno</li>
+                  <li>Un solo proyecto, un camino claro; los plazos se acuerdan desde el inicio</li>
+                  <li>Soporte e infraestructura: lo vemos en la propuesta (hosting, backups, etc.)</li>
                 </ul>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.15} className="h-full">
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 h-full flex flex-col">
                 <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined icon-lg text-[var(--accent)]">build_circle</span>
-                  Soporte Anual
+                  <span className="material-symbols-outlined icon-lg text-[var(--accent)]">contract</span>
+                  Sistemas de gestión por licencia
                 </h3>
-                <p className="text-[var(--text-muted)] text-sm mb-4">Como el cambio de aceite de un carro: hay que hacerlo para que tu sistema funcione bien. Hosting, seguridad, backups, actualizaciones, soporte técnico. Te lo detallamos en la propuesta comercial.</p>
+                <p className="text-[var(--text-muted)] text-sm mb-4">
+                  Licencia por año: renovás el plan y mantenés derecho a usar el producto, con soporte y actualizaciones según lo
+                  acordado. Incluye mi implementación en tu negocio, capacitación de tu equipo y el acompañamiento para que el
+                  sistema quede operando.
+                </p>
                 <ul className="text-sm text-[var(--text-muted)] space-y-1 mb-4 list-disc pl-5">
-                  <li>Servidor dedicado (no compartido)</li>
-                  <li>Base de datos individual</li>
-                  <li>SSL, backups diarios</li>
-                  <li>Soporte por WhatsApp</li>
+                  <li>Modelo anual claro: sabés qué cubre cada periodo</li>
+                  <li>Infraestructura seria: servidor dedicado, base de datos independiente, SSL, backups</li>
+                  <li>Canal directo conmigo por WhatsApp para el día a día</li>
                 </ul>
-                <p className="text-sm text-[var(--text-muted)] mt-auto">Si prefieres, puedes hostearlo tú mismo y encargarte del mantenimiento.</p>
+                <p className="text-sm text-[var(--text-muted)] mt-auto">Si preferís hostear vos mismo, también lo podemos evaluar.</p>
               </div>
             </ScrollReveal>
           </div>
           <ScrollReveal>
             <p className="text-center text-sm text-[var(--text-muted)]">
-              Con nosotros pagas el desarrollo una vez y el software es tuyo. Sin suscripción eterna. Los números concretos los ves en la propuesta comercial.
+              Los montos exactos van en la propuesta comercial, sin compromiso en la primera charla.
             </p>
           </ScrollReveal>
         </div>
       </section>
 
-      {/* Qué marcas, negocios o empresas pueden tener software a la medida */}
+      {/* Tipos de negocio */}
       <section className="px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>
             <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-4 text-center tracking-tight">
-              ¿Qué marcas, negocios o empresas pueden tener software a la medida?
+              ¿Qué tipo de negocios pueden tener software a la medida?
             </h2>
             <p className="text-center text-[var(--text-muted)] text-base mb-10 max-w-2xl mx-auto">
-              Cualquier negocio con procesos propios que no encajan en un software genérico. Algunos ejemplos:
+              Cualquier operación con procesos propios que no encajan en un software genérico. Algunos ejemplos de lo que ya he
+              hecho:
             </p>
           </ScrollReveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
               { icon: 'store', title: 'Retail y tiendas', text: 'Tiendas físicas u online que necesitan inventario, ventas, domicilios o facturación a su medida.' },
-              { icon: 'restaurant', title: 'Restaurantes y gastronomía', text: 'Pedidos, cocina, delivery, caja o reservas. El flujo que ya tienes, digital.' },
+              { icon: 'restaurant', title: 'Restaurantes y gastronomía', text: 'Pedidos, cocina, delivery, caja o reservas. El flujo que ya tenés, digital.' },
               { icon: 'fitness_center', title: 'Gimnasios y estudios', text: 'Clases, reservas, membresías, pagos e instructores en un solo sistema.' },
               { icon: 'medical_services', title: 'Clínicas y consultorios', text: 'Agenda, historiales, turnos y recordatorios sin depender de plataformas genéricas.' },
               { icon: 'school', title: 'Academias y centros educativos', text: 'Cursos, estudiantes, notas, asistencia o plataforma de aprendizaje propia.' },
-              { icon: 'business_center', title: 'Pymes y equipos de trabajo', text: 'Cualquier operación con procesos únicos: si no existe el software, lo construimos.' },
+              { icon: 'business_center', title: 'Pymes y equipos de trabajo', text: 'Cualquier operación con procesos únicos: si no existe el software, lo construyo contigo.' },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 0.04}>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 h-[172px] flex flex-col">
@@ -424,39 +505,39 @@ export default function Home() {
               {[
                 {
                   q: '¿Qué es un software a la medida?',
-                  a: 'Es un sistema hecho específicamente para tu negocio: lo programamos desde cero según tus procesos, tu forma de trabajar y lo que necesitas. No es un producto empaquetado que adaptas; es la herramienta que tu marca necesita, sin módulos de más ni pantallas que no usas.',
+                  a: 'Es un sistema hecho para tu negocio: lo programo desde cero según tus procesos y lo que necesitás. No es un producto empaquetado que adaptás: son pantallas y flujos que tienen sentido para vos.',
                 },
                 {
                   q: '¿Cuánto cuesta un software a la medida?',
-                  a: 'Depende del alcance. En la primera conversación revisamos tu necesidad y te pasamos la inversión en una propuesta comercial, sin compromiso. Desarrollo y soporte anual se detallan ahí.',
+                  a: 'Depende del alcance. En la primera charla revisamos tu necesidad y te paso la inversión en una propuesta, sin compromiso. Ahí van desarrollo y, si aplica, licencia o soporte.',
                 },
                 {
                   q: '¿El software es mío o lo alquilo?',
-                  a: 'Es tuyo. Pagas el desarrollo una vez y el software es tuyo para siempre. No dependes de que sigamos existiendo; puedes llevártelo a otro proveedor si quisieras. No es suscripción eterna.',
+                  a: 'En proyectos a la medida el entregable es tuyo: pagás el desarrollo según lo acordemos. En sistemas por licencia, el modelo es anual e incluye uso del producto y soporte según el plan. Te lo detallo en la propuesta.',
                 },
                 {
                   q: '¿Mis datos están separados de otros clientes?',
-                  a: 'Sí. Cada cliente tiene su propia base de datos y, si contratas soporte con nosotros, servidor dedicado. No compartes infraestructura con nadie.',
+                  a: 'Sí. Cada cliente tiene su propia base de datos y, cuando corresponde, servidor dedicado. No compartís infraestructura con nadie más.',
                 },
                 {
                   q: '¿Cuánto tiempo toma desarrollarlo?',
-                  a: 'Varía según la complejidad. Un sistema básico puede estar en unas semanas; uno más completo en dos o tres meses. Definimos plazos realistas desde el inicio.',
+                  a: 'Varía según la complejidad. Un sistema básico puede estar en unas semanas; uno más completo en dos o tres meses. Acordamos plazos realistas desde el inicio.',
                 },
                 {
                   q: '¿Qué necesito para empezar?',
-                  a: 'Una idea clara de qué quieres lograr: procesos que hoy te duelen, reportes que necesitas, quién usará el sistema. No hace falta saber de tecnología; te guiamos en el resto.',
+                  a: 'Una idea clara de qué querés lograr: qué te duele hoy, qué reportes necesitás, quién va a usar el sistema. No hace falta saber de tecnología: te guío en el resto.',
                 },
                 {
                   q: '¿Puedo hacer cambios después de que esté listo?',
-                  a: 'Sí. El software es tuyo y puede crecer con tu negocio. Agregamos funciones, ajustamos reportes o integramos nuevas herramientas cuando lo necesites.',
+                  a: 'Sí. El sistema puede crecer con tu negocio: agregamos funciones, ajustamos reportes o integramos herramientas nuevas cuando lo necesites.',
                 },
                 {
                   q: '¿Cómo es el proceso de trabajo?',
-                  a: 'Conversamos tu necesidad, definimos alcance y tiempos, desarrollamos por etapas y vas viendo avances. Probamos juntos y al final lo desplegamos. Soporte directo por WhatsApp.',
+                  a: 'Conversamos tu necesidad, definimos alcance y tiempos, desarrollo por etapas y vas viendo avances. Probamos juntos y al final lo dejamos en producción. Soporte directo por WhatsApp.',
                 },
                 {
                   q: '¿En qué se diferencia de un software ya hecho (ERP, etc.)?',
-                  a: 'Un ERP genérico te obliga a adaptar tu operación a cómo viene programado. A la medida es al revés: el sistema se construye alrededor de cómo tú trabajas, sin módulos de más ni funciones que no usas.',
+                  a: 'Un ERP genérico te obliga a adaptar tu operación a cómo viene programado. A la medida es al revés: el sistema se construye alrededor de cómo vos trabajás.',
                 },
               ].map((faq, i) => (
                 <details key={i} className="faq-item group border-b border-[var(--border)]">
@@ -476,62 +557,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparación SaaS vs a la medida — qué trae cada uno */}
-      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
-        <div className="max-w-4xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-10 text-center tracking-tight">
-              SaaS vs software a la medida
-            </h2>
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] overflow-hidden">
-              <table className="w-full text-left text-base">
-                <thead>
-                  <tr className="border-b border-[var(--border)]">
-                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text)]">Qué incluye</th>
-                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text-muted)] text-center w-28">SaaS</th>
-                    <th className="py-5 px-5 md:px-8 font-semibold text-[var(--text)] text-center w-28">A la medida</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[var(--text-muted)]">
-                  {[
-                    { feature: 'Se adapta a tu forma de trabajar', saas: false, medida: true },
-                    { feature: 'Solo las funciones que necesitas', saas: false, medida: true },
-                    { feature: 'El producto es tuyo (no suscripción eterna)', saas: false, medida: true },
-                    { feature: 'Cambios cuando tú lo necesites', saas: false, medida: true },
-                    { feature: 'Datos en tu servidor o tu nube', saas: false, medida: true },
-                    { feature: 'Listo en poco tiempo (plantilla fija)', saas: true, medida: false },
-                    { feature: 'Pago mensual predecible (suscripción)', saas: true, medida: false },
-                  ].map((row, i) => (
-                    <tr key={i} className="border-b border-[var(--border)] last:border-b-0">
-                      <td className="py-4 px-5 md:px-8">{row.feature}</td>
-                      <td className="py-4 px-5 md:px-8 text-center">
-                        {row.saas ? <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> : <span className="text-[var(--text-muted)]/30">—</span>}
-                      </td>
-                      <td className="py-4 px-5 md:px-8 text-center">
-                        {row.medida ? <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> : <span className="text-[var(--text-muted)]/30">—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
       {/* CTA final */}
       <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg)]">
         <div className="max-w-2xl mx-auto text-center">
           <ScrollReveal>
             <h2 className="hero-heading text-2xl md:text-3xl lg:text-4xl text-[var(--text)] mb-4 tracking-tight">
-              ¿Los sistemas del mercado no resuelven tu problema?
+              ¿Tenés una idea o querés digitalizar algo en tu negocio?
             </h2>
             <p className="text-[var(--text-muted)] text-lg mb-8 leading-relaxed">
-              Cuéntanos qué necesitas.
-              <br />
-              Si podemos resolverlo con software a la medida, te decimos cómo.
-              <br />
-              Si no, te recomendamos qué usar.
+              Escribime. Hablamos de tu proyecto sin ningún costo: contame qué necesitás y vemos si encaja un sitio, un sistema con
+              licencia o algo hecho a la medida.
             </p>
             <a
               href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
@@ -539,15 +574,24 @@ export default function Home() {
               rel="noopener noreferrer"
               className="btn btn-primary inline-flex items-center gap-2 text-base px-8 py-4"
             >
-              Iniciar conversación por WhatsApp
+              Escribirme por WhatsApp
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </a>
             <p className="text-[var(--text-muted)] text-sm mt-8 flex flex-col gap-1 items-center">
-              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> 10 negocios ya usan software hecho por nosotros</span>
-              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Respondemos personalmente</span>
-              <span className="flex items-center gap-2"><span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo, Colombia</span>
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Más de diez
+                negocios ya usan sistemas que construí
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Respondés conmigo
+                directo, no con un call center
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo,
+                para toda Colombia
+              </span>
             </p>
           </ScrollReveal>
         </div>
@@ -556,13 +600,15 @@ export default function Home() {
       {/* Footer — fondo naranja */}
       <footer className="px-6 py-16 md:py-20 border-t border-white/20 bg-[var(--accent)]">
         <ScrollReveal className="max-w-6xl mx-auto" delay={0}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-10 mb-10 md:gap-x-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-10 md:gap-x-16">
             
             {/* Brand */}
             <div className="min-w-0">
-              <p className="hero-heading text-2xl sm:text-3xl md:text-4xl text-white tracking-tight mb-3">{BRAND.username}</p>
+              <p className="hero-heading text-2xl sm:text-3xl md:text-4xl text-white tracking-tight mb-1">{BRAND.name}</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-white/80 mb-3">{BRAND.title}</p>
               <p className="text-sm text-white/90 leading-relaxed">
-                Somos un estudio. No programamos software por programar: pensamos en soluciones y las hacemos realidad con software.
+                Construyo soluciones digitales que la gente usa de verdad: sitios, sistemas con licencia y software a la medida.
+                Trabajo con negocios locales y remotos.
               </p>
             </div>
 
@@ -611,48 +657,24 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Links (mismos que el navbar) */}
-            <div className="min-w-0">
-              <p className="font-semibold mb-3 text-white">Links</p>
-              <div className="space-y-2 text-sm">
-                {NAV_LINKS.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    className="block text-white/90 hover:text-white transition-colors"
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
           </div>
 
-          {/* Línea + logo grande + cerebrito */}
+          {/* Firma */}
           <div className="pt-10 border-t border-white/20">
-            <div className="marca-fullview flex flex-col items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
-              <div className="flex items-center justify-center gap-4 sm:gap-6 w-full mb-12 flex-wrap">
-                <img
-                  src={encodeURI('/programamos.st (8).png')}
-                  alt=""
-                  className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain shrink-0 self-center"
-                  aria-hidden
-                />
-                <p
-                  className="hero-heading text-center text-white tracking-tight select-none m-0 flex items-center justify-center"
-                  style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}
-                >
-                  {BRAND.username}
-                </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 px-4 py-8">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-white/30 shadow-lg shrink-0">
+                <Image src={BRAND.portrait} alt="" fill className="object-cover object-top" sizes="112px" />
               </div>
-              <p className="text-[10px] sm:text-xs text-white/80 uppercase tracking-[0.35em] font-normal">
-                desarrollo de software
+              <p
+                className="hero-heading text-center sm:text-left text-white tracking-tight m-0"
+                style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', lineHeight: 1.1 }}
+              >
+                {BRAND.name}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-white/90">
-                © 2026 {BRAND.username}. Todos los derechos reservados.
+                © 2026 {BRAND.name}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-white/90">
                 Hecho desde Sincelejo para el mundo.

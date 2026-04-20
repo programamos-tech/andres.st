@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "programamos | Software a la medida",
-  description: "Desarrollo de software a la medida para negocios que los sistemas genéricos no resuelven. Pagas una vez, es tuyo. DB individual, soporte local. Sincelejo, Colombia.",
+  title: "Andrés Russ | Software Engineer",
+  description:
+    "Desarrollo de software freelancer en Sincelejo: sitios web, sistemas de gestión con licencia anual e implementación, y software a la medida. Hablamos de tu proyecto sin costo.",
 };
 
 export default function RootLayout({

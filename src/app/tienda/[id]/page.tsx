@@ -164,7 +164,7 @@ export default function ProductoDetallePage() {
         <ScrollReveal className="max-w-6xl mx-auto" delay={0}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
             <div>
-              <p className="hero-heading mb-3 text-[var(--brand-carbon)]">{BRAND.username}</p>
+              <p className="hero-heading mb-3 text-[var(--brand-carbon)]">{BRAND.name}</p>
               <p className="text-sm text-[var(--brand-marron)] leading-relaxed">
                 Software a la medida para negocios que quieren crecer con herramientas propias.
               </p>
@@ -219,12 +219,12 @@ export default function ProductoDetallePage() {
           <div className="pt-10 border-t border-[var(--border)]">
             <div className="marca-fullview flex items-center justify-center px-4 sm:px-6 pt-0 pb-0 mt-0 mb-0 min-w-0">
               <p className="hero-heading text-center text-[var(--brand-carbon)] tracking-tight select-none w-full m-0 min-w-0" style={{ fontSize: 'clamp(1.5rem, 8vw, 11rem)', lineHeight: 1 }}>
-                {BRAND.username}
+                {BRAND.name}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
               <p className="text-sm text-[var(--brand-marron)]">
-                © 2026 {BRAND.username}. Todos los derechos reservados.
+                © 2026 {BRAND.name}. Todos los derechos reservados.
               </p>
               <p className="text-sm text-[var(--brand-cafe)]">
                 Hecho desde Sincelejo para el mundo.
