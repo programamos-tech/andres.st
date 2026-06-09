@@ -1,698 +1,130 @@
 import Image from 'next/image';
-import Link from 'next/link';
-import { BRAND, CTA_LICENCIA_WHATSAPP, CTA_WHATSAPP_MESSAGE, SOCIAL_LINKS } from '@/lib/constants';
-import { ScrollReveal } from '@/components/ScrollReveal';
-import { HomeNav } from '@/components/HomeNav';
-import { VideoFromMidpoint } from '@/components/VideoFromMidpoint';
-import { ScrollToCenterVideo } from '@/components/ScrollToCenterVideo';
-import { PreviewSimulation } from '@/components/tienda/PreviewSimulation';
-import { PRODUCTOS } from '@/lib/tienda-productos';
+import { BRAND, CTA_WHATSAPP_MESSAGE } from '@/lib/constants';
+import { PROYECTOS } from '@/lib/proyectos';
+import { CinematicNav } from '@/components/CinematicNav';
+import { CinematicHero } from '@/components/CinematicHero';
+import { ProjectCard } from '@/components/ProjectCard';
+import { RevealOnScroll } from '@/components/RevealOnScroll';
 
-/** Logos de las marcas que trabajan conmigo */
-const CLIENT_LOGOS: { src: string; alt: string; contain?: boolean }[] = [
-  { src: '/logo.PNG', alt: 'Proyecto propio' },
-  { src: '/fundease.jpeg', alt: 'Fundease', contain: true },
-  { src: '/aleya.jpeg', alt: 'Aleya' },
-  { src: '/torocell4h.webp', alt: 'Torocell 4H' },
-  { src: '/torocellsahagun.jpeg', alt: 'Torocell Sahagún' },
-  { src: '/zonat.png', alt: 'Zonat' },
-  { src: '/rogerbox.jpg', alt: 'Rogerbox' },
-];
+const SERVICIOS = [
+  {
+    idx: '01',
+    titulo: 'Sistemas comerciales',
+    descripcion: 'Inventario, ventas, clientes y reportes. Licencia anual con implementación y capacitación.',
+  },
+  {
+    idx: '02',
+    titulo: 'Sitios web',
+    descripcion: 'Landing pages y sitios corporativos. Diseño limpio, responsive y enfocados en conversión.',
+  },
+  {
+    idx: '03',
+    titulo: 'Software a la medida',
+    descripcion: 'Cuando tu negocio necesita algo único: lo diseño, desarrollo y dejo en producción.',
+  },
+] as const;
+
+const whatsappUrl = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`;
+const clientesCount = new Set(PROYECTOS.map((p) => p.cliente)).size;
 
 export default function Home() {
   return (
-    <div id="top" className="min-h-screen flex flex-col scroll-mt-4">
-      <HomeNav />
+    <div>
+      <CinematicNav />
+      <CinematicHero />
 
-      {/* Hero: presentación + foto */}
-      <div className="min-h-screen flex flex-col hero-glow">
-        <main className="flex-1 flex items-center px-6 py-12 md:py-16 lg:py-20">
-          <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-5 order-2 lg:order-1 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[320px] sm:max-w-[380px] aspect-[4/5] rounded-3xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg-secondary)]">
-                <Image
-                  src={BRAND.portrait}
-                  alt={`${BRAND.name}, ${BRAND.title}`}
-                  fill
-                  className="object-cover object-top"
-                  sizes="(max-width: 1024px) 90vw, 400px"
-                  priority
-                />
-              </div>
-            </div>
-            <div className="lg:col-span-7 order-1 lg:order-2 text-center lg:text-left">
-              <p className="text-xs sm:text-sm font-medium uppercase tracking-[0.2em] text-[var(--text-muted)] mb-3">
-                {BRAND.title}
-              </p>
-              <h1 className="hero-heading text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-6xl mb-4 md:mb-6 leading-[1.08] tracking-tight text-[var(--accent)]">
-                Hola, soy Andrés Russ
-              </h1>
-              <p className="text-[var(--text)] text-lg md:text-xl font-medium mb-4 leading-snug">
-                Desarrollador de software en Sincelejo.
-              </p>
-              <p className="text-[var(--text-muted)] text-base md:text-lg mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                Me dedico a construir soluciones digitales a la medida: sitios web, sistemas de gestión y tiendas en línea. He
-                trabajado con clientes locales creando herramientas que usan todos los días en su operación.
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6">
-                <a
-                  href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary inline-flex items-center gap-2"
-                >
-                  Escríbeme por WhatsApp
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </a>
-                <a href="#servicios" className="btn btn-outline inline-flex items-center gap-2">
-                  Ver servicios
-                </a>
-              </div>
-              <p className="text-[var(--text-muted)] text-sm md:text-base flex flex-col gap-1 items-center lg:items-start">
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span>
-                  Primera conversación sin costo: cuéntame qué necesitas
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span>
-                  Desde Sincelejo para toda Colombia
-                </span>
-              </p>
-            </div>
-          </div>
-        </main>
-
-        {/* Tres servicios principales */}
-        <section id="servicios" className="border-t border-[var(--border)] px-6 py-14 md:py-20 bg-[var(--bg)] scroll-mt-24">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="hero-heading text-2xl md:text-3xl lg:text-4xl text-[var(--text)] text-center mb-3 tracking-tight">
-              Tres formas de trabajar juntos
-            </h2>
-            <p className="text-center text-[var(--text-muted)] text-base md:text-lg max-w-2xl mx-auto mb-10 md:mb-12">
-              Elegí la opción que encaje con tu etapa: presencia web, sistema listo con licencia o algo hecho solo para vos.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-              {[
-                {
-                  icon: 'language',
-                  title: 'Sitios web y landing pages',
-                  text: 'Presencia profesional en internet: landings que convierten, sitios corporativos y páginas rápidas, pensadas para que la gente te contacte.',
-                  cta: 'Quiero sitio o landing',
-                  href: `/landing`,
-                  wa: null as string | null,
-                },
-                {
-                  icon: 'storefront',
-                  title: 'Sistema de gestión comercial (por licencia)',
-                  text: 'Productos con licencia anual: vos pagás el plan cada año e incluye mi implementación en tu negocio, capacitación de tu equipo y el acompañamiento para que el sistema quede en uso real. Ideal para facturación, inventarios, cartera y operación diaria.',
-                  cta: 'Hablar de licencia y alcance',
-                  href: null,
-                  wa: CTA_LICENCIA_WHATSAPP,
-                },
-                {
-                  icon: 'architecture',
-                  title: 'Software a la medida',
-                  text: 'Cuando necesitás algo que no existe en el mercado: lo diseño y desarrollo según tus procesos — desde plataformas de cursos hasta membresías de gimnasio o flujos muy específicos.',
-                  cta: 'Contar mi idea',
-                  href: null,
-                  wa: CTA_WHATSAPP_MESSAGE,
-                },
-              ].map((s) => (
-                <div
-                  key={s.title}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 md:p-7 flex flex-col h-full shadow-[var(--shadow-soft)]"
-                >
-                  <span className="material-symbols-outlined icon-xl text-[var(--accent)] mb-4">{s.icon}</span>
-                  <h3 className="hero-heading text-xl md:text-2xl text-[var(--text)] mb-3 tracking-tight">{s.title}</h3>
-                  <p className="text-[var(--text-muted)] text-sm md:text-base leading-relaxed flex-1 mb-6">{s.text}</p>
-                  {s.href ? (
-                    <Link href={s.href} className="btn btn-primary w-full justify-center text-center mt-auto">
-                      {s.cta}
-                    </Link>
-                  ) : (
-                    <a
-                      href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(s.wa!)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary w-full justify-center mt-auto"
-                    >
-                      {s.cta}
-                    </a>
-                  )}
+      <section id="servicios" className="section-wrap scroll-mt-20 border-t border-[var(--border)]">
+        <RevealOnScroll>
+          <p className="section-tag">Servicios</p>
+          <h2 className="section-title">Lo que hago</h2>
+        </RevealOnScroll>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+          <div>
+            {SERVICIOS.map((s, i) => (
+              <RevealOnScroll key={s.idx} as="article" className="service-row" delay={i * 100}>
+                <span className="service-idx">{s.idx}</span>
+                <div>
+                  <h3 className="service-name">{s.titulo}</h3>
+                  <p className="service-desc">{s.descripcion}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Marcas / clientes */}
-        <section className="border-t border-[var(--border)] py-8 md:py-10 overflow-hidden flex-shrink-0">
-          <h2 className="hero-heading text-center text-xl md:text-2xl lg:text-3xl text-[var(--text)] mb-6 px-6 tracking-tight">
-            Algunas marcas y negocios con los que he trabajado
-          </h2>
-          <div className="relative">
-            <div className="logos-marquee-track">
-              {[...Array(6)].flatMap(() => [...CLIENT_LOGOS, ...CLIENT_LOGOS]).map((logo, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center flex-shrink-0 px-6 md:px-8"
-                >
-                  <div className="rounded-full overflow-hidden w-20 h-20 md:w-28 md:h-28 bg-[var(--bg-secondary)] flex items-center justify-center">
-                    <img
-                      src={logo.src}
-                      alt={logo.alt}
-                      className={`logo-marca w-full h-full ${logo.contain ? 'object-contain' : 'object-cover'}`}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ¿Cuándo tiene sentido algo a la medida? */}
-      <section className="px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg)]">
-        <div className="max-w-4xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-10 text-center tracking-tight">
-              ¿Cuándo tiene sentido un software a la medida?
-            </h2>
-          </ScrollReveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-10">
-            {[
-              { icon: 'block', title: 'Los sistemas del mercado no te sirven', text: 'Probaste facturación, inventarios, cartera… ninguno encaja con cómo operás de verdad.' },
-              { icon: 'swap_horiz', title: 'Te obligan a cambiar tu proceso', text: 'El software dice “así se hace”, pero tu negocio funciona distinto.' },
-              { icon: 'payments', title: 'Pagás por cosas que no usás', text: 'Planes con módulos que nunca tocás y que te salen caros cada mes.' },
-              { icon: 'lightbulb', title: 'Necesitás algo que no existe en una caja', text: 'Tu operación es específica: hace falta diseñarla a tu medida.' },
-            ].map((s, i) => (
-              <ScrollReveal key={i} delay={i * 0.05}>
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 md:p-6">
-                  <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2">
-                    <span className="material-symbols-outlined icon-lg text-[var(--text-muted)]">{s.icon}</span>
-                    {s.title}
-                  </h3>
-                  <p className="text-[var(--text-muted)] text-sm md:text-base leading-relaxed">{s.text}</p>
-                </div>
-              </ScrollReveal>
+              </RevealOnScroll>
             ))}
           </div>
-          <ScrollReveal>
-            <div className="rounded-xl border-2 border-[var(--accent)] bg-[var(--bg)] p-6 md:p-8 text-center">
-              <h3 className="hero-heading text-xl md:text-2xl text-[var(--text)] mb-3 tracking-tight flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined icon-xl text-[var(--accent)]">handshake</span>
-                Ahí entro yo
-              </h3>
-              <p className="text-[var(--text-muted)] text-base md:text-lg leading-relaxed">
-                Charlamos (presencial o videollamada), entiendo cómo trabajás
-                <br />
-                y construyo el sistema que resuelva tu problema.
-              </p>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Algunos trabajos — B-roll / videos */}
-      <section className="py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-8">
-          <ScrollReveal>
-            <h2 className="hero-heading text-center text-2xl md:text-3xl text-[var(--text)] mb-4 tracking-tight">
-              Estos son algunos de esos trabajos
-            </h2>
-            <p className="text-center text-[var(--text-muted)] text-lg max-w-2xl mx-auto">
-              No son demos genéricos: son sistemas que usan negocios reales. Deslizá o usá las flechas para ver tres proyectos
-              distintos.
+          <RevealOnScroll id="sobre-mi" className="scroll-mt-24" delay={150}>
+            <p className="section-tag">Sobre mí</p>
+            <p className="text-[var(--text-muted)] leading-relaxed mb-8">
+              Llevo años construyendo herramientas digitales para negocios locales en Colombia. Me importa que el
+              software sea fácil de usar, estable y fácil de mantener.
             </p>
-          </ScrollReveal>
-        </div>
-        <ScrollReveal>
-          <div className="w-full">
-            <ScrollToCenterVideo centerIndex={1} showArrows>
-              <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
-                <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
-                  <VideoFromMidpoint
-                    src="/landing.mp4"
-                    title="Sistema de seguimiento de clientes y domicilios"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-              <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
-                <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
-                  <VideoFromMidpoint
-                    src="/landing2.mp4"
-                    title="Plataforma de cursos y gestión de un gimnasio"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-              <div className="flex-shrink-0 w-[92vw] max-w-4xl snap-center sm:w-[88vw] md:w-[78vw]">
-                <div className="rounded-2xl overflow-hidden shadow-[var(--shadow-mid)] border border-[var(--border)] bg-[var(--bg)] aspect-video flex items-center justify-center">
-                  <VideoFromMidpoint
-                    src="/video.mp4"
-                    title="Distribuidora de productos con diferentes tiendas"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-            </ScrollToCenterVideo>
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* Funcionalidades e integraciones — marquee con más presencia */}
-      <section className="py-20 md:py-24 border-t border-[var(--border)] bg-[var(--bg-secondary)] relative overflow-hidden">
-        {/* Fondo sutil para dar profundidad */}
-        <div className="absolute inset-0 pointer-events-none opacity-40" style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, var(--accent) 0%, transparent 60%)' }} aria-hidden />
-        <div className="relative">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-10">
-            <ScrollReveal>
-              <h2 className="hero-heading text-2xl md:text-4xl text-[var(--text)] text-center tracking-tight mb-3">
-                Funcionalidades e integraciones que ya he construido
-              </h2>
-              <p className="text-center text-[var(--text-muted)] text-base md:text-lg max-w-2xl mx-auto">
-                Reportes, dashboards, WhatsApp, pagos y sistemas completos. Podés inspirarte en el catálogo y lo adaptamos a tu
-                caso.
-              </p>
-            </ScrollReveal>
-          </div>
-          <ScrollReveal>
-            <div className="w-full overflow-x-hidden modules-marquee-wrap">
-              <div className="modules-marquee-track py-4">
-                {[...PRODUCTOS, ...PRODUCTOS].map((p, i) => (
-                  <Link
-                    key={`${p.id}-${i}`}
-                    href={`/tienda/${p.id}`}
-                    className={`module-card flex-shrink-0 w-[300px] min-w-[300px] rounded-2xl border-l-4 border-[var(--border)] bg-[var(--bg)] p-5 flex flex-col group no-underline text-inherit ${
-                      p.tipo === 'funcionalidad'
-                        ? 'hover:border-l-[var(--accent)]'
-                        : p.tipo === 'integracion'
-                          ? 'hover:border-l-[var(--brand-cafe)]'
-                          : 'hover:border-l-[var(--text-muted)]'
-                    }`}
-                  >
-                    <div className="mb-4 flex-shrink-0 rounded-lg overflow-hidden border border-[var(--border)]/60">
-                      <PreviewSimulation tipo={p.preview} tipoProducto={p.tipo} />
-                    </div>
-                    <span
-                      className={`inline-flex w-fit px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide mb-2 ${
-                        p.tipo === 'funcionalidad'
-                          ? 'bg-[var(--accent)]/15 text-[var(--accent)]'
-                          : p.tipo === 'integracion'
-                            ? 'bg-[var(--brand-cafe)]/15 text-[var(--brand-cafe)]'
-                            : 'bg-[var(--text-muted)]/15 text-[var(--text-muted)]'
-                      }`}
-                    >
-                      {p.tipo === 'funcionalidad' ? 'Funcionalidad' : p.tipo === 'integracion' ? 'Integración' : 'Sistema'}
-                    </span>
-                    <h3 className="font-semibold text-[var(--text)] mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-2 text-base">{p.titulo}</h3>
-                    <p className="text-[var(--text-muted)] text-sm leading-relaxed line-clamp-3 flex-1">{p.descripcion}</p>
-                    {p.precio && (
-                      <p className="text-xs font-medium text-[var(--text-muted)] mt-3 pt-3 border-t border-[var(--border)]/60">{p.precio}</p>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-12">
-            <ScrollReveal>
-              <div className="text-center">
-                <Link
-                  href="/tienda"
-                  className="btn btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
-                >
-                  Ver catálogo completo
-                  <span className="material-symbols-outlined icon-sm">arrow_forward</span>
-                </Link>
-                <p className="text-sm text-[var(--text-muted)] mt-4">
-                  Explorá módulos y sistemas. Si algo encaja, lo cotizamos juntos.
-                </p>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
-
-      {/* Cómo trabajo — Kanban por etapas */}
-      <section id="como-funciona" className="px-4 sm:px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
-        <div className="max-w-6xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-2 text-center tracking-tight">
-              Cómo trabajo
-            </h2>
-            <p className="text-center text-[var(--text-muted)] text-sm md:text-base mb-8">
-              Cada columna es una etapa. El ticket resume lo que hago en esa fase.
-            </p>
-          </ScrollReveal>
-          <ScrollReveal>
-            <div
-              className="overflow-x-auto md:overflow-visible pb-4 md:pb-0 scroll-smooth snap-x snap-mandatory md:snap-none"
-              style={{ scrollbarGutter: 'stable' }}
-            >
-              <div className="grid grid-flow-col auto-cols-[260px] md:grid-flow-row md:grid-cols-2 lg:grid-cols-5 md:auto-cols-auto gap-3 md:gap-4 min-w-0">
+            <div className="grid grid-cols-3 gap-4">
               {[
-                { icon: 'chat', title: 'Conversamos', text: 'Te escucho: qué problema tenés, cómo trabajás hoy y qué necesitás.', time: '30-60 min' },
-                { icon: 'visibility', title: 'Entiendo', text: 'Visito tu negocio o lo vemos por videollamada. Miro cómo operás en la práctica.', time: '2-3 h' },
-                { icon: 'design_services', title: 'Diseñamos juntos', text: 'Te muestro cómo se vería el sistema: mockups, flujos y funciones.', time: '1 sem' },
-                { icon: 'code', title: 'Programo', text: 'Construyo el sistema desde cero. Vas viendo avances cada semana.', time: '2-8 sem' },
-                { icon: 'install_mobile', title: 'Implemento', text: 'Instalo, capacito a tu equipo y te dejo con garantía. En licencias, el plan anual incluye soporte acordado.', time: '1 sem +' },
-              ].map((step, i) => (
-                <div
-                  key={i}
-                  className="kanban-column flex-shrink-0 w-[260px] md:w-auto min-w-0 snap-center rounded-xl border border-[var(--border)] bg-[var(--bg)]/80 overflow-hidden"
-                >
-                  <div className="kanban-column-header px-3 py-2.5 border-b border-[var(--border)] flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[var(--accent)] text-lg">{step.icon}</span>
-                    <span className="font-semibold text-[var(--text)] text-sm">{step.title}</span>
+                { val: `${PROYECTOS.length}+`, lbl: 'Proyectos' },
+                { val: `${clientesCount}+`, lbl: 'Clientes' },
+                { val: '5+', lbl: 'Años' },
+              ].map((stat, i) => (
+                <RevealOnScroll key={stat.lbl} delay={200 + i * 80}>
+                  <div className="stat-box">
+                    <p className="stat-val">{stat.val}</p>
+                    <p className="stat-lbl">{stat.lbl}</p>
                   </div>
-                  <div className="p-3">
-                    <div className="kanban-ticket rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 shadow-[var(--shadow-soft)]">
-                      <p className="text-[var(--text-muted)] text-xs leading-relaxed mb-3">{step.text}</p>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[var(--accent)]/10 text-[var(--accent)] text-[10px] font-medium">
-                        <span className="material-symbols-outlined text-xs">schedule</span>
-                        {step.time}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              </div>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal>
-            <div className="flex justify-center mt-10">
-              <a
-                href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cta-cute inline-flex items-center gap-2"
-              >
-                Contame sobre tu proyecto
-                <span className="material-symbols-outlined text-lg">arrow_forward</span>
-              </a>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Cómo funciona la inversión */}
-      <section className="px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg)]">
-        <div className="max-w-4xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-6 text-center tracking-tight">
-              Cómo funciona la inversión
-            </h2>
-            <p className="text-center text-[var(--text-muted)] text-lg mb-10">
-              Depende del servicio: un sitio o un proyecto a la medida no es lo mismo que un sistema con licencia anual. En la
-              propuesta te dejo todo claro, sin letra chica.
-            </p>
-          </ScrollReveal>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            <ScrollReveal delay={0.1} className="h-full">
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 h-full flex flex-col">
-                <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined icon-lg text-[var(--accent)]">code</span>
-                  Sitios web y software a la medida
-                </h3>
-                <p className="text-[var(--text-muted)] text-sm mb-3">
-                  Definimos alcance y precio del proyecto. Lo pagás según lo acordemos (muchas veces en cuotas) y el entregable es
-                  tuyo.
-                </p>
-                <ul className="text-sm text-[var(--text-muted)] space-y-1 mb-4 list-disc pl-5">
-                  <li>En a la medida: desarrollo acorde a lo que necesitás, sin módulos de relleno</li>
-                  <li>Un solo proyecto, un camino claro; los plazos se acuerdan desde el inicio</li>
-                  <li>Soporte e infraestructura: lo vemos en la propuesta (hosting, backups, etc.)</li>
-                </ul>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal delay={0.15} className="h-full">
-              <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-6 h-full flex flex-col">
-                <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined icon-lg text-[var(--accent)]">contract</span>
-                  Sistemas de gestión por licencia
-                </h3>
-                <p className="text-[var(--text-muted)] text-sm mb-4">
-                  Licencia por año: renovás el plan y mantenés derecho a usar el producto, con soporte y actualizaciones según lo
-                  acordado. Incluye mi implementación en tu negocio, capacitación de tu equipo y el acompañamiento para que el
-                  sistema quede operando.
-                </p>
-                <ul className="text-sm text-[var(--text-muted)] space-y-1 mb-4 list-disc pl-5">
-                  <li>Modelo anual claro: sabés qué cubre cada periodo</li>
-                  <li>Infraestructura seria: servidor dedicado, base de datos independiente, SSL, backups</li>
-                  <li>Canal directo conmigo por WhatsApp para el día a día</li>
-                </ul>
-                <p className="text-sm text-[var(--text-muted)] mt-auto">Si preferís hostear vos mismo, también lo podemos evaluar.</p>
-              </div>
-            </ScrollReveal>
-          </div>
-          <ScrollReveal>
-            <p className="text-center text-sm text-[var(--text-muted)]">
-              Los montos exactos van en la propuesta comercial, sin compromiso en la primera charla.
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Tipos de negocio */}
-      <section className="px-6 py-16 md:py-20 border-t border-[var(--border)] bg-[var(--bg-secondary)]">
-        <div className="max-w-5xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-4 text-center tracking-tight">
-              ¿Qué tipo de negocios pueden tener software a la medida?
-            </h2>
-            <p className="text-center text-[var(--text-muted)] text-base mb-10 max-w-2xl mx-auto">
-              Cualquier operación con procesos propios que no encajan en un software genérico. Algunos ejemplos de lo que ya he
-              hecho:
-            </p>
-          </ScrollReveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {[
-              { icon: 'store', title: 'Retail y tiendas', text: 'Tiendas físicas u online que necesitan inventario, ventas, domicilios o facturación a su medida.' },
-              { icon: 'restaurant', title: 'Restaurantes y gastronomía', text: 'Pedidos, cocina, delivery, caja o reservas. El flujo que ya tenés, digital.' },
-              { icon: 'fitness_center', title: 'Gimnasios y estudios', text: 'Clases, reservas, membresías, pagos e instructores en un solo sistema.' },
-              { icon: 'medical_services', title: 'Clínicas y consultorios', text: 'Agenda, historiales, turnos y recordatorios sin depender de plataformas genéricas.' },
-              { icon: 'school', title: 'Academias y centros educativos', text: 'Cursos, estudiantes, notas, asistencia o plataforma de aprendizaje propia.' },
-              { icon: 'business_center', title: 'Pymes y equipos de trabajo', text: 'Cualquier operación con procesos únicos: si no existe el software, lo construyo contigo.' },
-            ].map((item, i) => (
-              <ScrollReveal key={i} delay={i * 0.04}>
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-5 h-[172px] flex flex-col">
-                  <h3 className="font-semibold text-[var(--text)] mb-2 flex items-center gap-2 flex-shrink-0">
-                    <span className="material-symbols-outlined icon-lg text-[var(--accent)]">{item.icon}</span>
-                    <span className="line-clamp-1">{item.title}</span>
-                  </h3>
-                  <p className="text-[var(--text-muted)] text-sm leading-relaxed flex-1 min-h-0 line-clamp-3">{item.text}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Preguntas frecuentes */}
-      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)]">
-        <div className="max-w-3xl mx-auto">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl text-[var(--text)] mb-10 tracking-tight">
-              Preguntas frecuentes
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal>
-            <div className="space-y-2">
-              {[
-                {
-                  q: '¿Qué es un software a la medida?',
-                  a: 'Es un sistema hecho para tu negocio: lo programo desde cero según tus procesos y lo que necesitás. No es un producto empaquetado que adaptás: son pantallas y flujos que tienen sentido para vos.',
-                },
-                {
-                  q: '¿Cuánto cuesta un software a la medida?',
-                  a: 'Depende del alcance. En la primera charla revisamos tu necesidad y te paso la inversión en una propuesta, sin compromiso. Ahí van desarrollo y, si aplica, licencia o soporte.',
-                },
-                {
-                  q: '¿El software es mío o lo alquilo?',
-                  a: 'En proyectos a la medida el entregable es tuyo: pagás el desarrollo según lo acordemos. En sistemas por licencia, el modelo es anual e incluye uso del producto y soporte según el plan. Te lo detallo en la propuesta.',
-                },
-                {
-                  q: '¿Mis datos están separados de otros clientes?',
-                  a: 'Sí. Cada cliente tiene su propia base de datos y, cuando corresponde, servidor dedicado. No compartís infraestructura con nadie más.',
-                },
-                {
-                  q: '¿Cuánto tiempo toma desarrollarlo?',
-                  a: 'Varía según la complejidad. Un sistema básico puede estar en unas semanas; uno más completo en dos o tres meses. Acordamos plazos realistas desde el inicio.',
-                },
-                {
-                  q: '¿Qué necesito para empezar?',
-                  a: 'Una idea clara de qué querés lograr: qué te duele hoy, qué reportes necesitás, quién va a usar el sistema. No hace falta saber de tecnología: te guío en el resto.',
-                },
-                {
-                  q: '¿Puedo hacer cambios después de que esté listo?',
-                  a: 'Sí. El sistema puede crecer con tu negocio: agregamos funciones, ajustamos reportes o integramos herramientas nuevas cuando lo necesites.',
-                },
-                {
-                  q: '¿Cómo es el proceso de trabajo?',
-                  a: 'Conversamos tu necesidad, definimos alcance y tiempos, desarrollo por etapas y vas viendo avances. Probamos juntos y al final lo dejamos en producción. Soporte directo por WhatsApp.',
-                },
-                {
-                  q: '¿En qué se diferencia de un software ya hecho (ERP, etc.)?',
-                  a: 'Un ERP genérico te obliga a adaptar tu operación a cómo viene programado. A la medida es al revés: el sistema se construye alrededor de cómo vos trabajás.',
-                },
-              ].map((faq, i) => (
-                <details key={i} className="faq-item group border-b border-[var(--border)]">
-                  <summary className="py-5 cursor-pointer list-none flex items-center justify-between gap-4 text-[var(--text)] font-medium text-left">
-                    <span>{faq.q}</span>
-                    <span className="faq-icon flex-shrink-0 w-5 h-5 text-[var(--text-muted)] transition-transform group-open:rotate-180" aria-hidden>
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                    </span>
-                  </summary>
-                  <p className="pb-5 text-[var(--text-muted)] leading-relaxed pl-0">
-                    {faq.a}
-                  </p>
-                </details>
+                </RevealOnScroll>
               ))}
             </div>
-          </ScrollReveal>
+          </RevealOnScroll>
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="px-6 py-24 md:py-28 border-t border-[var(--border)] bg-[var(--bg)]">
-        <div className="max-w-2xl mx-auto text-center">
-          <ScrollReveal>
-            <h2 className="hero-heading text-2xl md:text-3xl lg:text-4xl text-[var(--text)] mb-4 tracking-tight">
-              ¿Tenés una idea o querés digitalizar algo en tu negocio?
-            </h2>
-            <p className="text-[var(--text-muted)] text-lg mb-8 leading-relaxed">
-              Escribime. Hablamos de tu proyecto sin ningún costo: contame qué necesitás y vemos si encaja un sitio, un sistema con
-              licencia o algo hecho a la medida.
-            </p>
-            <a
-              href={`https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary inline-flex items-center gap-2 text-base px-8 py-4"
-            >
-              Escribirme por WhatsApp
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+      <section id="proyectos" className="section-wrap scroll-mt-20 bg-[var(--bg-secondary)] border-y border-[var(--border)]">
+        <RevealOnScroll>
+          <p className="section-tag">Portafolio</p>
+          <h2 className="section-title">Proyectos</h2>
+        </RevealOnScroll>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {PROYECTOS.map((p, i) => (
+            <RevealOnScroll key={p.id} delay={(i % 3) * 100}>
+              <ProjectCard proyecto={p} />
+            </RevealOnScroll>
+          ))}
+        </div>
+      </section>
+
+      <section id="contacto" className="section-wrap scroll-mt-20 border-t border-[var(--border)]">
+        <RevealOnScroll>
+          <p className="section-tag">Contacto</p>
+          <h2 className="section-title">Hablemos</h2>
+          <p className="text-[var(--text-muted)] max-w-md mb-8 leading-relaxed">
+            ¿Tienes un proyecto en mente? La primera conversación es sin costo. Escríbeme, llámame o mándame un correo.
+          </p>
+          <div className="contact-actions">
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-pill btn-pill-solid">
+              WhatsApp
             </a>
-            <p className="text-[var(--text-muted)] text-sm mt-8 flex flex-col gap-1 items-center">
-              <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Más de diez
-                negocios ya usan sistemas que construí
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Respondés conmigo
-                directo, no con un call center
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="material-symbols-outlined icon-sm text-[var(--status-ok)]">check_circle</span> Desde Sincelejo,
-                para toda Colombia
-              </span>
-            </p>
-          </ScrollReveal>
-        </div>
+            <a href={`tel:${BRAND.phoneTel}`} className="btn-pill btn-pill-outline">
+              {BRAND.phoneShort}
+            </a>
+            <a href={`mailto:${BRAND.email}`} className="btn-pill btn-pill-outline">
+              {BRAND.email}
+            </a>
+          </div>
+          <p className="mt-6 text-sm text-[var(--text-muted)]">{BRAND.location}</p>
+        </RevealOnScroll>
       </section>
 
-      {/* Footer — fondo naranja */}
-      <footer className="px-6 py-16 md:py-20 border-t border-white/20 bg-[var(--accent)]">
-        <ScrollReveal className="max-w-6xl mx-auto" delay={0}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 mb-10 md:gap-x-16">
-            
-            {/* Brand */}
-            <div className="min-w-0">
-              <p className="hero-heading text-2xl sm:text-3xl md:text-4xl text-white tracking-tight mb-1">{BRAND.name}</p>
-              <p className="text-xs uppercase tracking-[0.2em] text-white/80 mb-3">{BRAND.title}</p>
-              <p className="text-sm text-white/90 leading-relaxed">
-                Construyo soluciones digitales que la gente usa de verdad: sitios, sistemas con licencia y software a la medida.
-                Trabajo con negocios locales y remotos.
-              </p>
-            </div>
-
-            {/* Contact */}
-            <div className="min-w-0">
-              <p className="font-semibold mb-3 text-white">Contacto</p>
-              <div className="space-y-2 text-sm">
-                <a 
-                  href={`https://wa.me/${BRAND.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-white/90 hover:text-white transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                  </svg>
-                  +57 300 206 1711
-                </a>
-                <a 
-                  href={`mailto:${BRAND.email}`}
-                  className="flex items-center gap-2 text-white/90 hover:text-white transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {BRAND.email}
-                </a>
-                <p className="flex items-center gap-2 text-white/90">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {BRAND.location}
-                </p>
-                <div className="flex items-center gap-3 mt-2">
-                  <a href={SOCIAL_LINKS[0].href} target="_blank" rel="noopener noreferrer" className="text-white/90 hover:text-white transition-colors" aria-label="Instagram">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.012-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                  </a>
-                  <a href={SOCIAL_LINKS[1].href} target="_blank" rel="noopener noreferrer" className="text-white/90 hover:text-white transition-colors" aria-label="TikTok">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                  </a>
-                  <a href={SOCIAL_LINKS[2].href} target="_blank" rel="noopener noreferrer" className="text-white/90 hover:text-white transition-colors" aria-label="YouTube">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-
+      <RevealOnScroll as="footer" className="site-footer" delay={100}>
+        <div className="site-footer-inner">
+          <span className="cine-logo !text-sm">{BRAND.name}</span>
+          <div className="footer-mascot" aria-hidden>
+            <Image
+              src="/andrewmuleco.png"
+              alt=""
+              width={384}
+              height={533}
+              className="footer-mascot-img"
+              sizes="384px"
+            />
           </div>
-
-          {/* Firma */}
-          <div className="pt-10 border-t border-white/20">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 px-4 py-8">
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-white/30 shadow-lg shrink-0">
-                <Image src={BRAND.portrait} alt="" fill className="object-cover object-top" sizes="112px" />
-              </div>
-              <p
-                className="hero-heading text-center sm:text-left text-white tracking-tight m-0"
-                style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', lineHeight: 1.1 }}
-              >
-                {BRAND.name}
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-3 sm:gap-4 pt-6 pb-0 text-center sm:text-left">
-              <p className="text-sm text-white/90">
-                © 2026 {BRAND.name}. Todos los derechos reservados.
-              </p>
-              <p className="text-sm text-white/90">
-                Hecho desde Sincelejo para el mundo.
-              </p>
-            </div>
-            <div className="flex justify-center pt-6">
-              <a
-                href="#top"
-                className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
-                aria-label="Volver arriba"
-              >
-                <span className="material-symbols-outlined text-xl">arrow_upward</span>
-                Volver arriba
-              </a>
-            </div>
-          </div>
-        </ScrollReveal>
-      </footer>
+        </div>
+      </RevealOnScroll>
     </div>
   );
 }

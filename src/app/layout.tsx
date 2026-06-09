@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Andrés Russ | Software Engineer",
+  title: "Andrew Russ | Desarrollador Web",
   description:
-    "Desarrollo de software freelancer en Sincelejo: sitios web, sistemas de gestión con licencia anual e implementación, y software a la medida. Hablamos de tu proyecto sin costo.",
+    "Desarrollador Web. Sitios web, POS, inventario, tiendas en línea y software a la medida.",
 };
 
 export default function RootLayout({

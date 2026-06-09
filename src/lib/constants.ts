@@ -1,35 +1,49 @@
 export const BRAND = {
   /** Nombre visible en web y propuestas */
-  name: 'Andrés Russ',
+  name: 'Andrew Russ',
   /** Handle legado (redes, URLs internas) */
   username: 'programamos',
-  title: 'Software Engineer',
-  location: 'Sincelejo, Colombia',
-  avatar: '/andrew.jpg',
-  /** Foto principal landing */
-  portrait: '/andresruss.png',
-  whatsapp: '573002061711',
-  email: 'andresruss.st@gmail.com',
+  title: 'Desarrollador Web',
+  pitch: 'Sistemas hechos para vender más y administrar mejor.',
+  tagline: 'Desarrollador Web // Sistemas a la medida',
+  heroIntro:
+    'Desarrollador Web — Sitios Web, POS, Inventario, Tiendas en línea y software a la medida.',
+  location: 'Medellín, Colombia · Atención remota a todo el país',
+  locationShort: 'Medellín, Colombia',
+  avatar: '/andrew.jpeg',
+  /** Foto principal landing — a color */
+  portrait: '/andrew.jpeg',
+  /** Fondo hero cinematográfico */
+  heroBackground: '/hero-bg.png',
+  whatsapp: '573152802343',
+  email: 'andrewjruss7@gmail.com',
+  phoneDisplay: '+57 315 280 2343',
+  phoneShort: '315 280 2343',
+  phoneTel: '+573152802343',
 } as const;
 
 /** Redes sociales */
 export const SOCIAL_LINKS = [
-  { href: 'https://instagram.com/programamos', label: 'Instagram', icon: 'instagram' },
+  { href: 'https://instagram.com/andrewjruss7', label: 'Instagram', icon: 'instagram' },
   { href: 'https://tiktok.com/@programamos', label: 'TikTok', icon: 'tiktok' },
   { href: 'https://youtube.com/@programamos', label: 'YouTube', icon: 'youtube' },
 ] as const;
 
-/** Mensaje por defecto para CTAs a WhatsApp (hablan con Andrés) */
+/** Mensaje por defecto para CTAs a WhatsApp */
 export const CTA_WHATSAPP_MESSAGE =
-  'Hola Andrés, tengo una idea / necesito digitalizar algo en mi negocio. ¿Podemos hablar sin compromiso?';
+  'Hola Andrew, tengo una idea / necesito digitalizar algo en mi negocio. ¿Podemos hablar sin compromiso?';
 
 /** Mensaje para CTAs de la página Landing (sitios web) */
 export const CTA_LANDING_WHATSAPP =
-  'Hola Andrés, necesito un sitio web o landing. ¿Me cuentas cómo trabajas y rangos de inversión?';
+  'Hola Andrew, necesito un sitio web o landing. ¿Me cuentas cómo trabajas y rangos de inversión?';
 
 /** Mensaje para servicios por licencia */
 export const CTA_LICENCIA_WHATSAPP =
-  'Hola Andrés, me interesa un sistema de gestión comercial con licencia anual. ¿Podemos ver si encaja con mi negocio?';
+  'Hola Andrew, me interesa un sistema de gestión comercial con licencia anual. ¿Podemos ver si encaja con mi negocio?';
 
-/** Links del navbar y del footer (vacío: sin menú de navegación) */
-export const NAV_LINKS: readonly { href: string; label: string }[] = [];
+/** Links del navbar */
+export const NAV_LINKS: readonly { href: string; label: string }[] = [
+  { href: '/#servicios', label: 'Servicios' },
+  { href: '/#proyectos', label: 'Portafolio' },
+  { href: '/#contacto', label: 'Contacto' },
+];

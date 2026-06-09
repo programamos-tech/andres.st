@@ -17,7 +17,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
 }
 
 type HomeNavProps = {
-  /** Acción extra a la derecha (ej. botón de solicitudes en catálogo) */
   extraAction?: React.ReactNode;
 };
 
@@ -26,14 +25,15 @@ export function HomeNav({ extraAction }: HomeNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 px-4 sm:px-6 py-4 backdrop-blur-md bg-[var(--bg)]/80 border-b border-[var(--border)]/50">
+    <nav className="sticky top-0 z-50 px-4 sm:px-6 py-4 backdrop-blur-md bg-[var(--bg)]/90 border-b border-[var(--border)]">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <Link href="/" className="flex flex-col gap-0 min-w-0 no-underline text-inherit leading-tight">
-          <span className="hero-heading text-xl sm:text-2xl text-[var(--text)] tracking-tight truncate">{BRAND.name}</span>
-          <span className="text-[8px] sm:text-[9px] text-[var(--text-muted)] uppercase tracking-wider -mt-0.5">{BRAND.title}</span>
+          <span className="brand-script text-2xl sm:text-3xl text-[var(--text)] truncate">Andrés Russ</span>
+          <span className="text-[8px] sm:text-[9px] text-[var(--text-muted)] uppercase tracking-[0.18em] -mt-1">
+            {BRAND.title}
+          </span>
         </Link>
 
-        {/* Desktop: links + extra + WhatsApp */}
         <div className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map((l) => {
             const isHashHome = l.href.startsWith('/#');
@@ -43,7 +43,7 @@ export function HomeNav({ extraAction }: HomeNavProps) {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`text-sm font-medium ${isActive ? 'text-[var(--text)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'} transition-colors`}
+                className={`text-sm font-semibold ${isActive ? 'text-[var(--text)]' : 'text-[var(--text-muted)] hover:text-[var(--accent)]'} transition-colors`}
               >
                 {l.label}
               </Link>
@@ -54,26 +54,21 @@ export function HomeNav({ extraAction }: HomeNavProps) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 shrink-0 group no-underline"
+            className="btn btn-whatsapp !py-2 !px-5 !text-sm shrink-0"
             aria-label="Trabajemos juntos — WhatsApp"
           >
-            <span className="text-sm font-medium text-[var(--text-muted)] group-hover:text-[var(--text)] transition-colors whitespace-nowrap">
-              Trabajemos juntos
-            </span>
-            <span className="w-8 h-8 rounded-full border border-[var(--border)] flex items-center justify-center group-hover:border-[var(--text)] transition-colors text-[var(--text-muted)] group-hover:text-[var(--text)]">
-              <WhatsAppIcon className="w-4 h-4" />
-            </span>
+            <WhatsAppIcon className="w-4 h-4" />
+            Trabajemos juntos
           </a>
         </div>
 
-        {/* Mobile: extra + WhatsApp + hamburger, menu dropdown */}
         <div className="flex md:hidden items-center gap-2">
           {extraAction}
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full border border-[var(--border)] flex items-center justify-center hover:border-[var(--text)] transition-colors shrink-0 text-[var(--text-muted)] hover:text-[var(--text)]"
+            className="w-9 h-9 rounded-full bg-[#25d366] flex items-center justify-center text-white shrink-0"
             aria-label="Trabajemos juntos — WhatsApp"
           >
             <WhatsAppIcon className="w-4 h-4" />
@@ -98,9 +93,8 @@ export function HomeNav({ extraAction }: HomeNavProps) {
         </div>
       </div>
 
-      {/* Mobile menu panel */}
       {open && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--bg)] border-b border-[var(--border)] px-4 py-4 flex flex-col gap-1">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[var(--bg-card)] border-b border-[var(--border)] px-4 py-4 flex flex-col gap-1 shadow-[var(--shadow-soft)]">
           {NAV_LINKS.map((l) => {
             const isHashHome = l.href.startsWith('/#');
             const isActive =
@@ -110,7 +104,7 @@ export function HomeNav({ extraAction }: HomeNavProps) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className={`py-3 px-2 text-sm font-medium rounded-lg ${isActive ? 'text-[var(--text)] bg-[var(--bg-secondary)]' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--bg-secondary)]'} transition-colors`}
+                className={`py-3 px-2 text-sm font-semibold rounded-lg ${isActive ? 'text-[var(--text)] bg-[var(--accent-light)]' : 'text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--accent-light)]'} transition-colors`}
               >
                 {l.label}
               </Link>
@@ -121,7 +115,7 @@ export function HomeNav({ extraAction }: HomeNavProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setOpen(false)}
-            className="mt-2 py-3 px-2 text-sm font-semibold rounded-lg border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--text)] hover:bg-[var(--accent)]/20 flex items-center justify-center gap-2 transition-colors"
+            className="mt-2 btn btn-whatsapp justify-center"
           >
             <WhatsAppIcon className="w-4 h-4 shrink-0" />
             Trabajemos juntos
