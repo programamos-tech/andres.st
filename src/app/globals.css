@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
-
 @import "tailwindcss";
 
 @font-face {
@@ -31,8 +29,8 @@
   --accent: #ff6b2c;
   --accent-hover: #ff8349;
   --accent-light: rgba(255, 107, 44, 0.14);
-  --font-display: 'Anton', sans-serif;
-  --font-clean: 'Proxima Nova', 'DM Sans', -apple-system, sans-serif;
+  --font-display: var(--font-anton), 'Anton', Impact, 'Arial Narrow', sans-serif;
+  --font-clean: 'Proxima Nova', var(--font-dm-sans), 'DM Sans', -apple-system, sans-serif;
   --status-ok: #8fbc8f;
   --status-error: #c97a7a;
   --status-warn: #c9a86c;
