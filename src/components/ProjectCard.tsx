@@ -12,8 +12,9 @@ type ProjectCardProps = {
 export function ProjectCard({ proyecto }: ProjectCardProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const tienePreview = Boolean(proyecto.video || proyecto.imagen);
+  const tienePreview = Boolean(proyecto.video || proyecto.imagen || proyecto.poster);
   const esEnlace = Boolean(proyecto.url && !proyecto.pendiente);
+  const thumbSrc = proyecto.poster ?? proyecto.imagen;
 
   useEffect(() => {
     setMounted(true);
@@ -67,10 +68,11 @@ export function ProjectCard({ proyecto }: ProjectCardProps) {
                   controls
                   autoPlay
                   playsInline
+                  preload="auto"
                 />
-              ) : proyecto.imagen ? (
+              ) : thumbSrc ? (
                 <Image
-                  src={proyecto.imagen}
+                  src={thumbSrc}
                   alt={proyecto.titulo}
                   fill
                   className="object-contain"
@@ -103,24 +105,14 @@ export function ProjectCard({ proyecto }: ProjectCardProps) {
         tabIndex={tienePreview ? 0 : undefined}
       >
         <div className="project-thumb relative">
-          {proyecto.video ? (
-            <video
-              src={proyecto.video}
-              className="w-full h-full object-cover object-top"
-              playsInline
-              muted
-              loop
-              autoPlay
-              preload="metadata"
-              aria-label={`Vista previa: ${proyecto.titulo}`}
-            />
-          ) : proyecto.imagen ? (
+          {thumbSrc ? (
             <Image
-              src={proyecto.imagen}
+              src={thumbSrc}
               alt={`Vista previa: ${proyecto.titulo}`}
               fill
               className="object-cover object-top"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
             />
           ) : null}
           {proyecto.pendiente && (

@@ -272,7 +272,12 @@ body {
 .cine-hero-img {
   object-fit: cover;
   object-position: center 20%;
-  animation: heroKenBurns 12s ease-out both;
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .cine-hero-img {
+    animation: heroKenBurns 12s ease-out both;
+  }
 }
 
 .cine-hero-overlay {

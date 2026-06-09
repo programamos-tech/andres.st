@@ -115,12 +115,13 @@ export default function Home() {
           <span className="cine-logo !text-sm">{BRAND.name}</span>
           <div className="footer-mascot" aria-hidden>
             <Image
-              src="/andrewmuleco.png"
+              src="/andrewmuleco-sm.png"
               alt=""
               width={384}
               height={533}
               className="footer-mascot-img"
               sizes="384px"
+              loading="lazy"
             />
           </div>
         </div>

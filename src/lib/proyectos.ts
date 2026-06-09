@@ -6,7 +6,10 @@ export type Proyecto = {
   cliente: string;
   categoria: CategoriaProyecto;
   descripcion: string;
+  /** Video completo — solo se carga al abrir el modal */
   video?: string;
+  /** Miniatura estática para la card */
+  poster?: string;
   imagen?: string;
   url?: string;
   logo?: string;
@@ -22,7 +25,8 @@ export const PROYECTOS: Proyecto[] = [
     categoria: 'Sistema',
     descripcion:
       'Multi-tiendas, créditos, proveedores, ventas, inventario y transferencias en un solo sistema.',
-    video: '/zonat.mp4',
+    video: '/previews/zonat-lite.mp4',
+    poster: '/previews/zonat-poster.jpg',
     logo: '/zonat.png',
   },
   {
@@ -31,7 +35,8 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Rogerbox',
     categoria: 'Sistema',
     descripcion: 'Membresías, pagos y creación de cursos para operar un gym completo.',
-    video: '/rogerboxx.mp4',
+    video: '/previews/rogerboxx-lite.mp4',
+    poster: '/previews/rogerboxx-poster.jpg',
     logo: '/rogerbox.jpg',
   },
   {
@@ -40,7 +45,7 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Control Garage',
     categoria: 'Sitio web',
     descripcion: 'Servicios de instalación y reparación en Orlando, FL.',
-    imagen: '/previews/controlgarage-web.png',
+    imagen: '/previews/controlgarage-web.jpg',
   },
   {
     id: 'milagros-guacari',
@@ -48,7 +53,8 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Milagros',
     categoria: 'Sitio web',
     descripcion: 'Tienda en línea con panel interno: ventas, productos, combos y gestión general.',
-    video: '/milagros-guacari.mp4',
+    video: '/previews/milagros-guacari-lite.mp4',
+    poster: '/previews/milagros-guacari-poster.jpg',
   },
   {
     id: 'mariapaz-imports',
@@ -56,7 +62,8 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Maria Paz Imports',
     categoria: 'Sitio web',
     descripcion: 'Tienda en línea con ERP: catálogo, clientes, pasarela de pago y gestión de la tienda.',
-    video: '/mariapazimports.mp4',
+    video: '/previews/mariapazimports-lite.mp4',
+    poster: '/previews/mariapazimports-poster.jpg',
   },
   {
     id: 'fundesae-web',
@@ -64,7 +71,7 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Fundesae',
     categoria: 'Sitio web',
     descripcion: 'Sitio institucional de fortalecimiento social y ambiental.',
-    imagen: '/previews/fundesae-web.png',
+    imagen: '/previews/fundesae-web.jpg',
     logo: '/fundease.jpeg',
   },
   {
@@ -73,7 +80,8 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'C&M',
     categoria: 'Sitio web',
     descripcion: 'Sitio web para constructora: servicios, proyectos y contacto.',
-    video: '/cym.mp4',
+    video: '/previews/cym-lite.mp4',
+    poster: '/previews/cym-poster.jpg',
   },
   {
     id: 'casa-artesanal',
@@ -82,7 +90,8 @@ export const PROYECTOS: Proyecto[] = [
     categoria: 'Sistema',
     descripcion:
       'Sistema para 3 tiendas y fábrica de sombreros: inventario, facturas, transferencias, usuarios y roles.',
-    video: '/casa-artesanal.mp4',
+    video: '/previews/casa-artesanal-lite.mp4',
+    poster: '/previews/casa-artesanal-poster.jpg',
   },
   {
     id: 'bernabe',
@@ -90,6 +99,7 @@ export const PROYECTOS: Proyecto[] = [
     cliente: 'Bernabé',
     categoria: 'Sistema',
     descripcion: 'Gestión de asistencia en iglesia y seguimiento de personas.',
-    video: '/bernabe.mp4',
+    video: '/previews/bernabe-lite.mp4',
+    poster: '/previews/bernabe-poster.jpg',
   },
 ];

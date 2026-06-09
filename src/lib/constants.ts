@@ -14,7 +14,7 @@ export const BRAND = {
   /** Foto principal landing — a color */
   portrait: '/andrew.jpeg',
   /** Fondo hero cinematográfico */
-  heroBackground: '/hero-bg.png',
+  heroBackground: '/hero-bg.jpg',
   whatsapp: '573152802343',
   email: 'andrewjruss7@gmail.com',
   phoneDisplay: '+57 315 280 2343',
