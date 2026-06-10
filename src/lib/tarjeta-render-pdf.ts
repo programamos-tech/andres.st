@@ -11,8 +11,15 @@ async function registerFonts() {
   if (fontsRegistered) return;
   const fontsDir = path.join(process.cwd(), 'public', 'fonts');
   ReactPDF.Font.register({
-    family: 'Tanker',
-    src: path.join(fontsDir, 'Tanker-Regular.woff'),
+    family: 'Anton',
+    src: path.join(fontsDir, 'Anton-Regular.ttf'),
+  });
+  ReactPDF.Font.register({
+    family: 'Proxima Nova',
+    fonts: [
+      { src: path.join(fontsDir, 'ProximaNova-Regular.woff2'), fontWeight: 400 },
+      { src: path.join(fontsDir, 'ProximaNova-Bold.woff2'), fontWeight: 700 },
+    ],
   });
   fontsRegistered = true;
 }

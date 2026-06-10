@@ -10,7 +10,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline; filename="andrew-russ-tarjeta.pdf"',
+        'Content-Disposition': 'attachment; filename="andrew-russ-tarjeta.pdf"',
         'Cache-Control': 'public, max-age=3600',
       },
     });

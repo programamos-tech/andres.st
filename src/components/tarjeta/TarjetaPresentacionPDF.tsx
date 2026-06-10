@@ -3,14 +3,15 @@ import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/render
 import { BRAND, SOCIAL_LINKS } from '@/lib/constants';
 import { SERVICIOS_LANDING } from '@/lib/servicios';
 
+/** Colores sólidos — react-pdf no renderiza bien rgba en bordes */
 const colors = {
   bg: '#120e0c',
   bgCard: '#1f1915',
   bgSecondary: '#1c1612',
   text: '#f5ebe0',
-  textMuted: 'rgba(245, 235, 224, 0.62)',
+  textMuted: '#b0a396',
   accent: '#ff6b2c',
-  border: 'rgba(245, 235, 224, 0.12)',
+  border: '#3a322e',
 };
 
 const PAGE_W = 300;
@@ -23,7 +24,7 @@ function getStyles() {
       height: PAGE_H,
       backgroundColor: colors.bg,
       color: colors.text,
-      fontFamily: 'Helvetica',
+      fontFamily: 'Proxima Nova',
       fontSize: 9,
       paddingTop: 22,
       paddingBottom: 18,
@@ -35,7 +36,7 @@ function getStyles() {
       top: 0,
       left: 0,
       right: 0,
-      height: 4,
+      height: 3,
       backgroundColor: colors.accent,
     },
     header: {
@@ -47,7 +48,7 @@ function getStyles() {
       height: 52,
       borderRadius: 26,
       overflow: 'hidden',
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: colors.border,
       marginBottom: 10,
     },
@@ -56,38 +57,42 @@ function getStyles() {
       height: '100%',
       objectFit: 'cover',
     },
-    nameRow: {
-      flexDirection: 'row',
-      alignItems: 'baseline',
-      justifyContent: 'center',
-      gap: 6,
+    nameCol: {
+      alignItems: 'center',
       marginBottom: 6,
     },
     nameSolid: {
-      fontFamily: 'Tanker',
-      fontSize: 30,
+      fontFamily: 'Anton',
+      fontSize: 36,
       color: colors.text,
-      letterSpacing: 1.5,
+      letterSpacing: 2,
       textTransform: 'uppercase',
+      lineHeight: 1,
     },
-    nameAccent: {
-      fontFamily: 'Tanker',
-      fontSize: 30,
-      color: colors.accent,
-      letterSpacing: 1.5,
+    nameStroke: {
+      fontFamily: 'Anton',
+      fontSize: 36,
+      color: colors.text,
+      letterSpacing: 2,
       textTransform: 'uppercase',
+      lineHeight: 1,
+      marginTop: -2,
+      opacity: 0.85,
     },
     title: {
-      fontSize: 10,
+      fontSize: 8,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.accent,
-      letterSpacing: 1.2,
+      letterSpacing: 1.4,
       textTransform: 'uppercase',
       marginBottom: 8,
+      marginTop: 6,
       textAlign: 'center',
     },
     intro: {
       fontSize: 8.5,
+      fontFamily: 'Proxima Nova',
       color: colors.textMuted,
       textAlign: 'center',
       lineHeight: 1.45,
@@ -96,6 +101,7 @@ function getStyles() {
     sectionLabel: {
       fontSize: 7,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.accent,
       letterSpacing: 1.8,
       textTransform: 'uppercase',
@@ -115,6 +121,7 @@ function getStyles() {
     serviceIdx: {
       fontSize: 11,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.accent,
       width: 18,
     },
@@ -124,11 +131,13 @@ function getStyles() {
     serviceTitle: {
       fontSize: 9.5,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.text,
       marginBottom: 3,
     },
     serviceDesc: {
       fontSize: 7.5,
+      fontFamily: 'Proxima Nova',
       color: colors.textMuted,
       lineHeight: 1.4,
     },
@@ -149,6 +158,7 @@ function getStyles() {
       width: 62,
       fontSize: 7,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.accent,
       letterSpacing: 0.6,
       textTransform: 'uppercase',
@@ -156,11 +166,13 @@ function getStyles() {
     contactValue: {
       flex: 1,
       fontSize: 8.5,
+      fontFamily: 'Proxima Nova',
       color: colors.text,
       lineHeight: 1.35,
     },
     location: {
       fontSize: 7.5,
+      fontFamily: 'Proxima Nova',
       color: colors.textMuted,
       textAlign: 'center',
       marginTop: 10,
@@ -178,11 +190,13 @@ function getStyles() {
     siteUrl: {
       fontSize: 11,
       fontWeight: 700,
+      fontFamily: 'Proxima Nova',
       color: colors.text,
       letterSpacing: 0.3,
     },
     siteHint: {
       fontSize: 7,
+      fontFamily: 'Proxima Nova',
       color: colors.textMuted,
       marginTop: 2,
     },
@@ -227,11 +241,11 @@ export function TarjetaPresentacionPDF({ avatarBase64, mascotBase64 }: TarjetaPr
               <Image src={avatarBase64} style={styles.avatar} />
             </View>
           ) : null}
-          <View style={styles.nameRow}>
+          <View style={styles.nameCol}>
             <Text style={styles.nameSolid}>{firstName}</Text>
-            <Text style={styles.nameAccent}>{lastName}</Text>
+            <Text style={styles.nameStroke}>{lastName}</Text>
           </View>
-          <Text style={styles.title}>Desarrollador Web</Text>
+          <Text style={styles.title}>{BRAND.title}</Text>
           <Text style={styles.intro}>{BRAND.pitch}</Text>
         </View>
 
