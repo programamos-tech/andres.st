@@ -9,12 +9,11 @@ export function CinematicHero() {
     <section className="cine-hero" id="top">
       <Image
         src={BRAND.heroBackground}
-        alt=""
+        alt="Andrew Russ en su escritorio"
         fill
         className="cine-hero-img"
         sizes="100vw"
         priority
-        aria-hidden
       />
       <div className="cine-hero-overlay" aria-hidden />
       <div className="cine-grain" aria-hidden />
