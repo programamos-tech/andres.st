@@ -61,9 +61,11 @@ export function EngHero() {
                 {']'}
                 {'\n\n'}
                 <span className="code-c">// Σ proyectos = </span>
-                <span className="code-n">7+</span>
+                <span className="code-n">{BRAND.stats.proyectos}</span>
+                <span className="code-c"> · clientes = </span>
+                <span className="code-n">{BRAND.stats.clientes}</span>
                 <span className="code-c"> · ubicación = </span>
-                <span className="code-s">&apos;CO&apos;</span>
+                <span className="code-s">&apos;Sincelejo&apos;</span>
               </code>
             </pre>
           </div>

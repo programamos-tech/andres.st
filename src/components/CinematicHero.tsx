@@ -7,28 +7,14 @@ const [firstName, lastName] = BRAND.name.split(' ');
 export function CinematicHero() {
   return (
     <section className="cine-hero" id="top">
-      <Image
-        src={BRAND.heroBackground}
-        alt="Andrew Russ en su escritorio"
-        fill
-        className="cine-hero-img"
-        sizes="100vw"
-        priority
-      />
-      <div className="cine-hero-overlay" aria-hidden />
-      <div className="cine-grain" aria-hidden />
-      <div className="cine-vignette" aria-hidden />
-
-      <div className="cine-hero-inner cine-hero-inner--bottom">
-        <div className="cine-bottom">
+      <div className="cine-hero-split">
+        <div className="cine-hero-copy">
           <div className="cine-name-row">
             <span className="cine-name-part">{firstName}</span>
             <span className="cine-name-part cine-name-stroke">{lastName}</span>
           </div>
-
           <p className="cine-tagline">{BRAND.heroIntro}</p>
-
-          <div className="cine-cta-row cine-cta-row--center">
+          <div className="cine-cta-row">
             <a href="#proyectos" className="btn-cine btn-cine-solid">
               Ver proyectos
             </a>
@@ -36,6 +22,19 @@ export function CinematicHero() {
               Escríbeme
             </a>
           </div>
+        </div>
+
+        <div className="cine-hero-portrait">
+          <Image
+            src={BRAND.portrait}
+            alt="Andrew Russ, desarrollador web"
+            fill
+            quality={90}
+            priority
+            sizes="(max-width: 899px) 100vw, 80vw"
+            className="cine-hero-portrait-img"
+          />
+          <div className="cine-hero-portrait-haze" aria-hidden />
         </div>
       </div>
     </section>

@@ -18,7 +18,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Andrew Russ | Desarrollador Web",
   description:
-    "Desarrollador Web. Sitios web, POS, inventario, tiendas en línea y software a la medida.",
+    "Desarrollador Web en Sincelejo, Colombia. Más de 17 proyectos y más de 10 clientes. Sitios web, POS, inventario, tiendas en línea y software a la medida.",
 };
 
 export default function RootLayout({

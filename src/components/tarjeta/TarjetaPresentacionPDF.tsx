@@ -5,13 +5,13 @@ import { SERVICIOS_LANDING } from '@/lib/servicios';
 
 /** Colores sólidos — react-pdf no renderiza bien rgba en bordes */
 const colors = {
-  bg: '#120e0c',
-  bgCard: '#1f1915',
-  bgSecondary: '#1c1612',
-  text: '#f5ebe0',
-  textMuted: '#b0a396',
-  accent: '#ff6b2c',
-  border: '#3a322e',
+  bg: '#ffffff',
+  bgCard: '#f3f8f9',
+  bgSecondary: '#e8f4f6',
+  text: '#12181a',
+  textMuted: '#5c6a6e',
+  accent: '#0097b2',
+  border: '#d3e0e3',
 };
 
 const PAGE_W = 300;

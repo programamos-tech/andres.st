@@ -29,7 +29,7 @@ export function CinematicNav() {
   }, []);
 
   return (
-    <header className={`cine-nav${scrolled ? ' cine-nav--scrolled' : ''}`}>
+    <header className={`cine-nav cine-nav--light${scrolled ? ' cine-nav--scrolled' : ''}`}>
       <Link href="/" className="cine-logo">
         {first} {last}
       </Link>

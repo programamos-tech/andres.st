@@ -7,14 +7,20 @@ export const BRAND = {
   pitch: 'Sistemas hechos para vender más y administrar mejor.',
   tagline: 'Desarrollador Web // Sistemas a la medida',
   heroIntro:
-    'Desarrollador Web — Sitios Web, POS, Inventario, Tiendas en línea y software a la medida.',
-  location: 'Medellín, Colombia · Atención remota a todo el país',
-  locationShort: 'Medellín, Colombia',
-  avatar: '/andrew.jpeg',
-  /** Foto principal landing — a color */
-  portrait: '/andrew.jpeg',
-  /** Fondo hero cinematográfico */
-  heroBackground: '/hero-bg.jpg',
+    'Desarrollador Web en Sincelejo — Sitios Web, POS, Inventario, Tiendas en línea y software a la medida.',
+  location: 'Sincelejo, Colombia · Atención remota a todo el país',
+  locationShort: 'Sincelejo, Colombia',
+  stats: {
+    proyectos: '17+',
+    clientes: '10+',
+    años: '7+',
+  },
+  role: 'Software Engineer',
+  footerBio:
+    'Software engineer con más de 7 años de experiencia trabajando para empresas de tecnología en Colombia y USA, en plataformas de retail, fintech y ciberseguridad.',
+  avatar: '/andrew-portrait.jpg',
+  portrait: '/andrew-portrait.jpg',
+  heroBackground: '/andrew-portrait.jpg',
   whatsapp: '573152802343',
   email: 'andrewjruss7@gmail.com',
   phoneDisplay: '+57 315 280 2343',

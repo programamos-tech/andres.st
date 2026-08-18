@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { BRAND, CTA_WHATSAPP_MESSAGE } from '@/lib/constants';
 import { PROYECTOS } from '@/lib/proyectos';
 import { CinematicNav } from '@/components/CinematicNav';
@@ -25,7 +24,6 @@ const SERVICIOS = [
 ] as const;
 
 const whatsappUrl = `https://wa.me/${BRAND.whatsapp}?text=${encodeURIComponent(CTA_WHATSAPP_MESSAGE)}`;
-const clientesCount = new Set(PROYECTOS.map((p) => p.cliente)).size;
 
 export default function Home() {
   return (
@@ -53,14 +51,15 @@ export default function Home() {
           <RevealOnScroll id="sobre-mi" className="scroll-mt-24" delay={150}>
             <p className="section-tag">Sobre mí</p>
             <p className="text-[var(--text-muted)] leading-relaxed mb-8">
-              Llevo años construyendo herramientas digitales para negocios locales en Colombia. Me importa que el
-              software sea fácil de usar, estable y fácil de mantener.
+              Trabajo desde Sincelejo, Colombia. Llevo años construyendo herramientas digitales para negocios
+              locales: más de 17 proyectos y más de 10 clientes. Me importa que el software sea fácil de usar,
+              estable y fácil de mantener.
             </p>
             <div className="grid grid-cols-3 gap-4">
               {[
-                { val: `${PROYECTOS.length}+`, lbl: 'Proyectos' },
-                { val: `${clientesCount}+`, lbl: 'Clientes' },
-                { val: '5+', lbl: 'Años' },
+                { val: BRAND.stats.proyectos, lbl: 'Proyectos' },
+                { val: BRAND.stats.clientes, lbl: 'Clientes' },
+                { val: BRAND.stats.años, lbl: 'Años' },
               ].map((stat, i) => (
                 <RevealOnScroll key={stat.lbl} delay={200 + i * 80}>
                   <div className="stat-box">
@@ -112,18 +111,11 @@ export default function Home() {
 
       <RevealOnScroll as="footer" className="site-footer" delay={100}>
         <div className="site-footer-inner">
-          <span className="cine-logo !text-sm">{BRAND.name}</span>
-          <div className="footer-mascot" aria-hidden>
-            <Image
-              src="/andrewmuleco-sm.png"
-              alt=""
-              width={384}
-              height={533}
-              className="footer-mascot-img"
-              sizes="384px"
-              loading="lazy"
-            />
+          <div className="footer-brand">
+            <span className="cine-logo !text-sm">{BRAND.name}</span>
+            <p className="footer-role">{BRAND.role}</p>
           </div>
+          <p className="footer-bio">{BRAND.footerBio}</p>
         </div>
       </RevealOnScroll>
     </div>
